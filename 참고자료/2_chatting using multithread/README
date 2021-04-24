@@ -1,0 +1,9 @@
+/* 
+ * https://creampuffy.tistory.com/26?category=889810
+ * <자바 스윙 미니 프로젝트 - 캐치마인드 CatchMind>
+ * chatClient <- GameChat.java
+ * chatDTO <- GameChaatDTO.java
+ * chatHandler <- GameChatHandler.java
+ * chatServer <- GameChatServer.java
+ * 작동 원리를 이해하기 위해 GUI 빼고 수정
+ */
