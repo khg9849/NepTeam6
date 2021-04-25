@@ -99,9 +99,6 @@ public class paintClient {
         l.setBounds(20,20,400,400);
         f.add(l);
         
-        Brush b=new Brush();
-   	 	b.setBounds(20,20,400,400);
-   	 	f.add(b);
         
         l.addMouseMotionListener( new MouseMotionListener() {
             
@@ -109,9 +106,13 @@ public class paintClient {
             	System.out.println("mouseEvent occured");
             	
             	Brush bb=new Brush();
+                bb.setBounds(20,20,400,400);
+                f.add(bb);
+                
             	 bb.setXx(e.getX());
                  bb.setYy(e.getY());
-                 
+                 bb.repaint();
+                 bb.printAll(bb.getGraphics());
                  paintDTO dto=new paintDTO();
                  dto.setB(bb);
                  
@@ -151,6 +152,7 @@ public class paintClient {
 					     
 					     f.add(bb);
 					     bb.update(bi.getGraphics());
+					     bb.repaint();
 					     bb.printAll(bi.getGraphics());
 						System.out.println("painting is done");
 					}catch(IOException e) {
