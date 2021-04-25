@@ -37,7 +37,10 @@ public class Brush  extends JLabel{
 	public void setCol(Color col) {
 		this.col = col;
 	}
-
+	
+	public void setCol(int r, int g, int b) {
+		this.col = new Color(r, g, b);
+	}
 	
 	public void paint(Graphics g) {
 		g.setColor(col);

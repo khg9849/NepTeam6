@@ -1,4 +1,4 @@
-import java.awt.Frame;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
@@ -12,6 +12,7 @@ import java.net.Socket;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JSlider;
 
 public class paintClient {
 	private Socket socket;
@@ -23,6 +24,8 @@ public class paintClient {
 	
 	
 	private JFrame f;
+	//private TextField tf1, tf2, tf3;
+	private JSlider rCol, gCol, bCol;
 	private BufferedImage bi;
 	private JLabel l;
 	private Brush b;
@@ -82,25 +85,44 @@ public class paintClient {
 		}
 	}
 	
+	public void initRGBSlider() {
+		
+		rCol = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
+		gCol = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
+		bCol = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
+		
+		rCol.setBounds(450,20, 100,30);
+		gCol.setBounds(450, 70, 100,30);
+		bCol.setBounds(450, 120, 100,30);
+        
+        f.add(rCol);
+        f.add(gCol);
+        f.add(bCol);
+
+	}
+	
 	public void setCanvas() {
 		//System.out.println("Setting canvas...");
 		f=new JFrame("Canvas");
-		f.setSize(500,500);
+		f.setSize(600,500);
         f.setLocationRelativeTo(null);
         //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setLayout(null);
         f.setVisible( true );
         f.addWindowListener(new WinEvent());
-   
+        
         bi = new BufferedImage(400, 400, BufferedImage.TYPE_INT_RGB );
         //BufferedImage: 이미지 픽셀 정보를 버퍼에 저장해 이미지를 처리하는 클래스
         
         l = new JLabel(new ImageIcon(bi) );
         l.setBounds(20,20,400,400);
         f.add(l);
+
+        //RGB 색상값 설정하는 JSlider를 생성
+        initRGBSlider();
         
         //브러시 설정
-    	Brush bb=new Brush(0,255,0);
+    	Brush bb=new Brush(rCol.getValue(), gCol.getValue(), bCol.getValue());
         bb.setBounds(20,20,400,400);
         f.add(bb);
         
@@ -108,7 +130,7 @@ public class paintClient {
         l.addMouseMotionListener( new MouseMotionListener() {
             
             public void mouseDragged(MouseEvent e) {
-            	
+            	            	
                 //브러시를 화면에 실시간 구현
             	 bb.setXx(e.getX());
                  bb.setYy(e.getY());
@@ -132,6 +154,20 @@ public class paintClient {
 
             }           
         }); 
+        
+        l.addMouseListener(new MouseAdapter() {
+            
+        	public void mousePressed(MouseEvent e) {
+        		
+        		//JSlider에 있는 r, g, b값 가져와서 브러시에 정보 기입
+        		int r = rCol.getValue();
+            	int g = gCol.getValue();
+            	int b = bCol.getValue();
+            	
+            	bb.setCol(r,g,b);
+            	
+        	}
+        });
 	}
 	
 	public void recvData() {
@@ -143,6 +179,7 @@ public class paintClient {
 					try {
 						//dto 받음
 						paintDTO dto=(paintDTO)reader.readObject();
+						dto.getB().print();
 						
 						//dto에 있는 브러시 객체를 꺼냄
 						Brush recvbb=dto.getB();
