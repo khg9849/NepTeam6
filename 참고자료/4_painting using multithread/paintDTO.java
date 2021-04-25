@@ -1,3 +1,4 @@
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.io.Serializable;
@@ -14,8 +15,6 @@ public class paintDTO implements Serializable {
 	private Info command;
 	
 	paintDTO(){
-		b=new Brush();
-		b.setBounds(20,20,400,400);
 		command=Info.DRAW;
 	}
 

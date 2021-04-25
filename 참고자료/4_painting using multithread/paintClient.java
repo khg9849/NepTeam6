@@ -83,7 +83,7 @@ public class paintClient {
 	}
 	
 	public void setCanvas() {
-		System.out.println("Setting canvas...");
+		//System.out.println("Setting canvas...");
 		f=new JFrame("Canvas");
 		f.setSize(500,500);
         f.setLocationRelativeTo(null);
@@ -99,30 +99,30 @@ public class paintClient {
         l.setBounds(20,20,400,400);
         f.add(l);
         
+        //브러시 설정
+    	Brush bb=new Brush(0,255,0);
+        bb.setBounds(20,20,400,400);
+        f.add(bb);
+        
         
         l.addMouseMotionListener( new MouseMotionListener() {
             
             public void mouseDragged(MouseEvent e) {
-            	System.out.println("mouseEvent occured");
             	
-            	Brush bb=new Brush();
-                bb.setBounds(20,20,400,400);
-                f.add(bb);
-                
+                //브러시를 화면에 실시간 구현
             	 bb.setXx(e.getX());
                  bb.setYy(e.getY());
                  bb.repaint();
-                 bb.printAll(bb.getGraphics());
+                 bb.printAll(bi.getGraphics());
+                 
+                 //브러시를 dto에 넣어서 보냄
                  paintDTO dto=new paintDTO();
                  dto.setB(bb);
                  
 				try {
 					writer.writeObject(dto);
 					writer.flush();
-					
-					System.out.println("we drew...");
-	                dto.getB().print();
-					System.out.println("send picture to server");
+					writer.reset();
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -141,20 +141,19 @@ public class paintClient {
 			public void run() {
 				while(isThread) {
 					try {
+						//dto 받음
 						paintDTO dto=(paintDTO)reader.readObject();
-						System.out.println("reading...");
 						
-						
-						Brush bb=dto.getB();
+						//dto에 있는 브러시 객체를 꺼냄
+						Brush recvbb=dto.getB();
+						recvbb.setBounds(20,20,400,400);
+					     f.add(recvbb);
 					     
-					     System.out.println("we received...");
-					     bb.print();
+					     //실시간 구현된 브러시를 마찬가지로 실시간 재현
+					     recvbb.update(bi.getGraphics());
+					     recvbb.repaint();
+					     recvbb.printAll(bi.getGraphics());
 					     
-					     f.add(bb);
-					     bb.update(bi.getGraphics());
-					     bb.repaint();
-					     bb.printAll(bi.getGraphics());
-						System.out.println("painting is done");
 					}catch(IOException e) {
 						e.printStackTrace();
 					}catch(ClassNotFoundException e1) {

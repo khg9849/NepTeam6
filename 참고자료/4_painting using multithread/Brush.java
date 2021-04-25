@@ -5,6 +5,11 @@ import javax.swing.JLabel;
 
 public class Brush  extends JLabel{
 	private int xx,yy;
+	private Color col;
+	
+	public Brush(int r, int g, int b) {
+		this.col = new Color(r,g,b);
+	}
 	
 	public void print() {
 		System.out.println("xx: "+xx+" yy: "+yy);
@@ -33,7 +38,6 @@ public class Brush  extends JLabel{
 		this.col = col;
 	}
 
-	private Color col=new Color(255,0,0);
 	
 	public void paint(Graphics g) {
 		g.setColor(col);

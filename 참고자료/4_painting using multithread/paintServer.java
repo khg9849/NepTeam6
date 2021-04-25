@@ -15,6 +15,7 @@ public class paintServer{
 	            list = new ArrayList<paintHandler>();
 	            while (true) {
 	                Socket socket = serverSocket.accept();
+	                System.out.println("get client");
 	                paintHandler handler = new paintHandler(socket, list);
 	                handler.start();
 	                list.add(handler);
