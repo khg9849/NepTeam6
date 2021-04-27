@@ -6,7 +6,9 @@ import java.io.Serializable;
 import javax.swing.JLabel;
 
 enum Info{
-	DRAW,EXIT
+	DRAW,EXIT,
+	LINE_START,LINE_FINISH,
+	FETCH
 }
 
 public class paintDTO implements Serializable {

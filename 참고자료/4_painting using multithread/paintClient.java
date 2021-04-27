@@ -1,3 +1,7 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -10,6 +14,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
@@ -29,7 +34,10 @@ public class paintClient {
 	private BufferedImage bi;
 	private JLabel l;
 	private Brush b;
-
+	
+	// FETCH: 캔버스를 새로 열어도 기존의 정보를 담는다
+	private JButton bttn_fetch;
+	
 	private boolean isThread=true;
 	
 	class WinEvent implements WindowListener{ 
@@ -126,6 +134,10 @@ public class paintClient {
         bb.setBounds(20,20,400,400);
         f.add(bb);
         
+        // FETCH 버튼 설정. 근데 바로바로 안뜬다...
+        bttn_fetch=new JButton("FETCH");
+        bttn_fetch.setBounds(450,200, 80,30);
+        f.add(bttn_fetch);
         
         l.addMouseMotionListener( new MouseMotionListener() {
             
@@ -165,9 +177,52 @@ public class paintClient {
             	int b = bCol.getValue();
             	
             	bb.setCol(r,g,b);
+
+            	// 새로운 line이 입력된다는 info 전송
+                paintDTO dto=new paintDTO();
+                dto.setCommand(Info.LINE_START);
+				try {
+					writer.writeObject(dto);
+					writer.flush();
+					writer.reset();
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
             	
         	}
+        	// 새로운 line 입력이 완료되었다는 info 전송
+        	public void mouseReleased(MouseEvent e) {
+        		paintDTO dto=new paintDTO();
+                dto.setCommand(Info.LINE_FINISH);
+				try {
+					writer.writeObject(dto);
+					writer.flush();
+					writer.reset();
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
+        	}
+
         });
+        
+        bttn_fetch.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				paintDTO dto=new paintDTO();
+                dto.setCommand(Info.FETCH);
+				try {
+					writer.writeObject(dto);
+					writer.flush();
+					writer.reset();
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+        	
+        });
+        
+        
 	}
 	
 	public void recvData() {
@@ -190,6 +245,7 @@ public class paintClient {
 					     recvbb.update(bi.getGraphics());
 					     recvbb.repaint();
 					     recvbb.printAll(bi.getGraphics());
+					     
 					     
 					}catch(IOException e) {
 						e.printStackTrace();
