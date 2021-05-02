@@ -1,10 +1,11 @@
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
@@ -17,6 +18,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JSlider;
 
 public class paintClient {
@@ -27,119 +31,111 @@ public class paintClient {
 	private final String serverIP="127.0.0.1";
 	private final int port=9790;
 	
-	
 	private JFrame f;
-	//private TextField tf1, tf2, tf3;
-	private JSlider rCol, gCol, bCol;
-	private BufferedImage bi;
-	private JLabel l;
-	private Brush b;
 	
-	// FETCH: 캔버스를 새로 열어도 기존의 정보를 담는다
-	private JButton bttn_fetch;
+	private JLabel canvas;
+	private BufferedImage bi;
+	private JMenuBar mb;
+	
+	// color picker
+	private myColorPicker colorPicker;
+	private Color col;
+	
+	// brush diameter(직경)
+	private JSlider diaCol;
 	
 	private boolean isThread=true;
-	
-	class WinEvent implements WindowListener{ 
-		@Override
-		public void windowOpened(WindowEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void windowClosing(WindowEvent e) {
-			paintDTO dto=new paintDTO();
-			dto.setCommand(Info.EXIT);
-			try {
-				writer.writeObject(dto);
-				writer.flush();
-				System.out.println("서버에 EXIT 전송");
-			}catch(Exception e1) {
-				e1.printStackTrace();
-			}
-			isThread=false;
-			
-		}
-
-		@Override
-		public void windowClosed(WindowEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void windowIconified(WindowEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void windowDeiconified(WindowEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void windowActivated(WindowEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void windowDeactivated(WindowEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
+		
+	public void initSlider() {
+		diaCol = new JSlider(JSlider.HORIZONTAL, 1, 100, 20);
+		diaCol.setBounds(450,20, 100,30);
+        f.add(diaCol);
 	}
 	
-	public void initRGBSlider() {
-		
-		rCol = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
-		gCol = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
-		bCol = new JSlider(JSlider.HORIZONTAL, 0, 255, 0);
-		
-		rCol.setBounds(450,20, 100,30);
-		gCol.setBounds(450, 70, 100,30);
-		bCol.setBounds(450, 120, 100,30);
-        
-        f.add(rCol);
-        f.add(gCol);
-        f.add(bCol);
-
+	public void initMenu() {
+        mb=new JMenuBar();
+    	JMenu showMenu=new JMenu("Show");
+    	JMenu fileMenu=new JMenu("File");
+    	JMenu tempMenu=new JMenu("Temp");
+    	mb.add(showMenu);
+    	mb.add(fileMenu);
+    	mb.add(tempMenu);
+    	
+    	JMenuItem item1=new JMenuItem("show color picker");
+    	item1.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    				colorPicker.appear();
+			}
+    	});
+    	showMenu.add(item1);
+    	
+    	JMenuItem item2=new JMenuItem("Fetch");
+    	item2.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    			paintDTO dto=new paintDTO();
+                dto.setCommand(Info.FETCH);
+				try {
+					writer.writeObject(dto);
+					writer.flush();
+					writer.reset();
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
+    		}
+    	});
+    	tempMenu.add(item2);
+    	
+    	f.setJMenuBar(mb);
+    	 
+	}
+	
+	public void initCanvas() {
+		 bi = new BufferedImage(400, 400, BufferedImage.TYPE_INT_RGB );
+		 
+	        //BufferedImage: 이미지 픽셀 정보를 버퍼에 저장해 이미지를 처리하는 클래스
+	        Graphics g=bi.getGraphics();
+	        g.setColor(Color.WHITE);
+	        g.fillRect(0, 0, 400, 400);
+	        canvas=new JLabel(new ImageIcon(bi));
+	        canvas.setBounds(20,20,400,400);
+	        f.add(canvas);
 	}
 	
 	public void setCanvas() {
-		//System.out.println("Setting canvas...");
 		f=new JFrame("Canvas");
 		f.setSize(600,500);
         f.setLocationRelativeTo(null);
-        //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setLayout(null);
-        f.setVisible( true );
-        f.addWindowListener(new WinEvent());
+        f.addWindowListener(new WindowAdapter() {
+        	public void windowClosing(WindowEvent e) {
+    			paintDTO dto=new paintDTO();
+    			dto.setCommand(Info.EXIT);
+    			try {
+    				writer.writeObject(dto);
+    				writer.flush();
+    				System.out.println("서버에 EXIT 전송");
+    			}catch(Exception e1) {
+    				e1.printStackTrace();
+    			}
+    			isThread=false;
+    			
+    		}
+        });
+      
+     
+        initMenu();
+        initSlider();
+        initCanvas();
         
-        bi = new BufferedImage(400, 400, BufferedImage.TYPE_INT_RGB );
-        //BufferedImage: 이미지 픽셀 정보를 버퍼에 저장해 이미지를 처리하는 클래스
-        
-        l = new JLabel(new ImageIcon(bi) );
-        l.setBounds(20,20,400,400);
-        f.add(l);
-
-        //RGB 색상값 설정하는 JSlider를 생성
-        initRGBSlider();
+        // color picker
+        colorPicker=new myColorPicker(Color.BLACK);
         
         //브러시 설정
-    	Brush bb=new Brush(rCol.getValue(), gCol.getValue(), bCol.getValue());
+    	Brush bb=new Brush(col, 20);
         bb.setBounds(20,20,400,400);
-        f.add(bb);
         
-        // FETCH 버튼 설정. 근데 바로바로 안뜬다...
-        bttn_fetch=new JButton("FETCH");
-        bttn_fetch.setBounds(450,200, 80,30);
-        f.add(bttn_fetch);
         
-        l.addMouseMotionListener( new MouseMotionListener() {
+        canvas.addMouseMotionListener( new MouseMotionListener() {
             
             public void mouseDragged(MouseEvent e) {
             	            	
@@ -167,16 +163,14 @@ public class paintClient {
             }           
         }); 
         
-        l.addMouseListener(new MouseAdapter() {
+        canvas.addMouseListener(new MouseAdapter() {
             
+        	
         	public void mousePressed(MouseEvent e) {
         		
-        		//JSlider에 있는 r, g, b값 가져와서 브러시에 정보 기입
-        		int r = rCol.getValue();
-            	int g = gCol.getValue();
-            	int b = bCol.getValue();
-            	
-            	bb.setCol(r,g,b);
+        		//set color
+            	bb.setCol(colorPicker.getCol());
+            	bb.setDia(diaCol.getValue());
 
             	// 새로운 line이 입력된다는 info 전송
                 paintDTO dto=new paintDTO();
@@ -205,24 +199,8 @@ public class paintClient {
 
         });
         
-        bttn_fetch.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				paintDTO dto=new paintDTO();
-                dto.setCommand(Info.FETCH);
-				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
-				}catch(Exception e1) {
-					e1.printStackTrace();
-				}
-			}
-        	
-        });
         
-        
+        f.setVisible( true );
 	}
 	
 	public void recvData() {
@@ -281,6 +259,7 @@ public class paintClient {
 		}
 		
 		setCanvas();
+		
 		System.out.println("setting is done");
 		recvData();
 		

@@ -6,9 +6,19 @@ import javax.swing.JLabel;
 public class Brush  extends JLabel{
 	private int xx,yy;
 	private Color col;
+	private int dia;
 	
-	public Brush(int r, int g, int b) {
-		this.col = new Color(r,g,b);
+	public int getDia() {
+		return dia;
+	}
+
+	public void setDia(int dia) {
+		this.dia = dia;
+	}
+
+	public Brush(Color col, int dia) {
+		this.col = col;
+		this.dia=dia;
 	}
 	
 	public void print() {
@@ -44,6 +54,6 @@ public class Brush  extends JLabel{
 	
 	public void paint(Graphics g) {
 		g.setColor(col);
-		g.fillOval(xx-10, yy-10, 20, 20);
+		g.fillOval(xx-dia/2, yy-dia/2, dia, dia);
 	}
 }
