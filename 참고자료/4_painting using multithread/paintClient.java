@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,20 +8,21 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JSlider;
 
 public class paintClient {
@@ -84,6 +86,23 @@ public class paintClient {
     		}
     	});
     	tempMenu.add(item2);
+    	
+    	JMenuItem item3=new JMenuItem("Save");
+    	item3.addActionListener(new ActionListener() {
+    		 public void actionPerformed(ActionEvent e) {
+    			 
+                 try { 
+                	 String fileName=JOptionPane.showInputDialog("저장할 파일 이름을 입력하세요");
+        			 ImageIO.write(bi, "PNG", new File("./src/"+fileName+".PNG")); 
+        			 int result=JOptionPane.showConfirmDialog(item3, "파일이 저장되었습니다. 폴더를 여시겠습니까?","Confirm",JOptionPane.YES_NO_OPTION);
+        			 if(result==JOptionPane.YES_OPTION)
+        				 Desktop.getDesktop().open(new File("./src"));	 
+                 }
+                 	
+                 catch (IOException e1) { e1.printStackTrace(); }               
+              }            
+          });
+    	fileMenu.add(item3);
     	
     	f.setJMenuBar(mb);
     	 
