@@ -3,6 +3,10 @@ import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -16,6 +20,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import javax.imageio.ImageIO;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -23,7 +28,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
 import javax.swing.JSlider;
+
+//현재 유저가 컨트롤하는 Brush의 역할
+enum BrushMode{
+	DRAW, ERASE
+}
 
 public class paintClient {
 	private Socket socket;
@@ -45,6 +56,11 @@ public class paintClient {
 	
 	// brush diameter(직경)
 	private JSlider diaCol;
+	
+	//현재 브러시의 역할 (e.g. 그리는중, 지우는중, 구역선택중 ...)
+	private BrushMode brushMode;
+	private JRadioButton rb_draw;
+	private JRadioButton rb_erase;
 	
 	private boolean isThread=true;
 		
@@ -120,6 +136,38 @@ public class paintClient {
 	        f.add(canvas);
 	}
 	
+	public void initRadioButton() {
+		//라디오 버튼 생성 및 각 버튼에 대한 이벤트 처리
+		rb_draw = new JRadioButton("test_draw (B)");
+		rb_draw.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				brushMode = BrushMode.DRAW;
+			}
+		});
+		rb_erase = new JRadioButton("test_erase (E)");
+		rb_erase.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				brushMode = BrushMode.ERASE;
+			}
+		});
+		
+		//초기 선택은 draw모드
+		rb_draw.setSelected(true);
+		rb_draw.setFocusable(false);
+		rb_erase.setFocusable(false);
+		
+		//라디오 버튼 그룹화 = 여러 옵션들 중에 하나만 선택하게 만들기
+		ButtonGroup b_group = new ButtonGroup();
+		b_group.add(rb_draw);
+		b_group.add(rb_erase);
+		
+		//메인 화면에 출력
+		rb_draw.setBounds(450,50, 150,30);
+		rb_erase.setBounds(450,80, 150,30);
+        f.add(rb_draw);
+        f.add(rb_erase);
+	}
+	
 	public void setCanvas() {
 		f=new JFrame("Canvas");
 		f.setSize(600,500);
@@ -145,6 +193,7 @@ public class paintClient {
         initMenu();
         initSlider();
         initCanvas();
+        initRadioButton();
         
         // color picker
         colorPicker=new myColorPicker(Color.BLACK);
@@ -188,7 +237,13 @@ public class paintClient {
         	public void mousePressed(MouseEvent e) {
         		
         		//set color
-            	bb.setCol(colorPicker.getCol());
+        		if(brushMode == BrushMode.DRAW) {
+        			bb.setCol(colorPicker.getCol());
+        		}
+        		else if(brushMode == BrushMode.ERASE) {
+        			//bb.setCol(bb.getBackground());
+        			bb.setCol(Color.WHITE);
+        		}
             	bb.setDia(diaCol.getValue());
 
             	// 새로운 line이 입력된다는 info 전송
@@ -217,7 +272,34 @@ public class paintClient {
         	}
 
         });
-        
+        //키 이벤트 생성
+        canvas.addKeyListener(new KeyListener() {
+
+			public void keyTyped(KeyEvent e) {
+				
+			}
+
+			public void keyPressed(KeyEvent e) {
+				int keycode = e.getKeyCode();
+				switch(keycode) {
+				case KeyEvent.VK_B:
+					rb_draw.doClick();
+					System.out.println("doClick Brush");
+					break;
+				case KeyEvent.VK_E:
+					rb_erase.doClick();
+					System.out.println("doClick Erase");
+					break;
+				}
+			}
+
+			public void keyReleased(KeyEvent e) {
+				
+			}
+        	
+        });
+        //키 이벤트는 포커스를 받을 수 있는 컴포넌트를 설정해 주어야 한다.
+        canvas.setFocusable(true);
         
         f.setVisible( true );
 	}
