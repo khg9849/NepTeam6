@@ -1,0 +1,8 @@
+
+여러명이서 그림 그리는 프로젝트 간이버전
+
+<2_chatting using multithread>를 기반으로 만듦
+<2_chatting using multithread>에서 참고한 캐치마인드 프로젝트는 DTO 에 짧은 선 정보를 담아서 전송함
+그 대신 그림판 프로젝트<3_painting> 처럼  DTO에 점 하나 정보를 담아서 전송하는 방식 적용함
+
+바로바로 업데이트 안되는 문제 있음
