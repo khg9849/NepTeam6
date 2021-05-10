@@ -67,6 +67,8 @@ public class paintHandler extends Thread {
 				}
 				else if(dto.getCommand()==Info.LINE_START) {
 					line=new Line(); // line 입력 시작
+					broadcast(dto);
+					line.add(dto.getB());
 				}
 				else if(dto.getCommand()==Info.LINE_FINISH) {
 					lineList.add(line); // line 입력 종료 -> lineList에 추가
@@ -94,6 +96,9 @@ public class paintHandler extends Thread {
 					}
 					
 				}
+				else if(dto.getCommand() == Info.LAYER) {
+					broadcast(dto);
+				}
 			}
 		}catch(IOException e) {
 			e.printStackTrace();
@@ -107,8 +112,13 @@ public class paintHandler extends Thread {
 	private void broadcast(paintDTO dto) {
 		for(paintHandler cho:list) {
 			try {
-				cho.writer.writeObject(dto);
-				cho.writer.flush();
+				if(cho != this) {
+					cho.writer.writeObject(dto);
+					cho.writer.flush();
+				}
+				else {
+					continue;
+				}
 			}catch(IOException e) {
 				e.printStackTrace();
 			}

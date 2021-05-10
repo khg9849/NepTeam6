@@ -6,8 +6,14 @@ import java.io.Serializable;
 import javax.swing.JLabel;
 
 enum Info{
+	//그림
 	DRAW,LINE_START,LINE_FINISH,
+	LAYER,
+	
+	//채팅
 	JOIN,SEND,
+	
+	//참여 및 종료
 	EXIT, FETCH
 }
 
@@ -17,6 +23,9 @@ public class paintDTO implements Serializable {
 	private Info command; // DTO type
 	
 	private Brush b;
+	private BrushMode brushMode;
+	private boolean isAddLayer;
+	private int selectedLayerIndex;
 	
 	private String message;
 	private String nickname;
@@ -31,6 +40,30 @@ public class paintDTO implements Serializable {
 
 	public void setB(Brush b) {
 		this.b = b;
+	}
+	
+	public BrushMode getBrushMode() {
+		return brushMode;
+	}
+	
+	public void setBrushMode(BrushMode brushMode2) {
+		brushMode = brushMode2;
+	}
+	
+	public boolean getLayerBoolean() {
+		return isAddLayer;
+	}
+	
+	public void setLayerBoolean(boolean bn) {
+		isAddLayer = bn;
+	}
+	
+	public int getL() {
+		return selectedLayerIndex;
+	}
+	
+	public void setL(int index) {
+		selectedLayerIndex = index;
 	}
 
 	public Info getCommand() {
