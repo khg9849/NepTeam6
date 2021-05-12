@@ -14,7 +14,10 @@ enum Info{
 	JOIN,SEND,
 	
 	//참여 및 종료
-	EXIT, FETCH
+	EXIT, FETCH,
+	
+	//ROOM
+	CREATE,ENTER
 }
 
 public class paintDTO implements Serializable {
@@ -30,9 +33,31 @@ public class paintDTO implements Serializable {
 	private String message;
 	private String nickname;
 	
+	private String roomID;
+	private String roomPW;
+	
+	public String getRoomID() {
+		return roomID;
+	}
+
+	public void setRoomID(String roomID) {
+		this.roomID = roomID;
+	}
+
+	public String getRoomPW() {
+		return roomPW;
+	}
+
+	public void setRoomPW(String roomPW) {
+		this.roomPW = roomPW;
+	}
+
+
+	
 	paintDTO(){
 		command=Info.DRAW;
 	}
+	
 
 	public Brush getB() {
 		return b;
@@ -89,5 +114,6 @@ public class paintDTO implements Serializable {
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
 	}
+
 	
 }

@@ -8,21 +8,27 @@ public class paintHandler extends Thread {
 	private ObjectInputStream reader;
 	private ObjectOutputStream writer;
 	private Socket socket;
-	private ArrayList<paintHandler>list;
+	
+	private ArrayList<Room> roomList;
+	private Room room;
+	private ArrayList<paintHandler>handlerList;
 	
 	private Line line; //핸들러가 받은 brush 리스트
 	private ArrayList<Line> lineList; //line 리스트
 	
-	public paintHandler(Socket socket, ArrayList<paintHandler> list) {
+
+	public paintHandler(Socket socket, ArrayList<Room> roomList) {
 		try {
 			this.socket=socket;
-			this.list=list;
+			this.roomList=roomList;
 			this.writer=new ObjectOutputStream(socket.getOutputStream());
 			this.reader=new ObjectInputStream(socket.getInputStream());
 			this.lineList=new ArrayList<Line>();
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println("initialMenu()?");
 	}
 
 	public void run() {
@@ -31,12 +37,60 @@ public class paintHandler extends Thread {
 				//클라이언트에서 보낸 dto는 서버 안에 있는 Handler들이 받음
 				paintDTO dto = (paintDTO)reader.readObject();
 				
+				if(dto.getCommand()==Info.CREATE) {;
+					String roomID=dto.getRoomID();
+					String roomPW=dto.getRoomPW();
+					String nickname=dto.getNickname();
+					
+					// 중복되는 roomID 확인 
+					for(Room r:roomList) {
+						// 1. 중복됨 => 메시지 띄우기
+						// (지금은 중복 무조건 안된다고 가정)
+						if(r.getRoomID().equals(roomID)) {
+							System.out.println("중복된다~!");
+						}
+					}
+				
+					// 2. 중복 안 됨 => 방 생성 
+					handlerList=new ArrayList<paintHandler>();
+					room=new Room(roomID,roomPW,handlerList);
+					roomList.add(room);
+					System.out.println("room "+roomID+" is created");
+					
+					room.enter(this);
+					System.out.println(nickname+" is entered "+roomID);
+				}
+				else if(dto.getCommand()==Info.ENTER) {
+					String roomID=dto.getRoomID();
+					String roomPW=dto.getRoomPW();
+					
+					String nickname=dto.getNickname();
+					int flag=0;
+					
+					// 해당 방이 있는지 확인
+					for(Room r:roomList) {
+						// 1. 방 찾음
+						if(r.getRoomID().equals(roomID)) {
+							System.out.println("room "+roomID+" is found");
+							r.enter(this);
+							handlerList=r.getHandlerList();
+							System.out.println(nickname+" is entered "+roomID);
+							flag=1;
+						}
+					}
+
+					// 2. 방 없음
+					// (지금은 중복 무조건 방 있다고 가정)
+					if(flag==0) {
+						System.out.println("방 없다~!");
+					}
+				}
 				//클라이언트 종료 메세지가 담긴 dto면 Handler 종료
-				if(dto.getCommand()==Info.EXIT) {
+				else if(dto.getCommand()==Info.EXIT) {
 					reader.close();
 					writer.close();
 					socket.close();
-					list.remove(this);
+					handlerList.remove(this);
 					System.out.println("exit client");
 					
 					paintDTO sendDTO=new paintDTO();
@@ -77,7 +131,7 @@ public class paintHandler extends Thread {
 				// FETCH를 요청받으면 다른 핸들러가 가지고 있는 lineList를 참조해서
 				// 요청한 클라이언트에 전송
 				else if(dto.getCommand()==Info.FETCH) {
-					for(paintHandler cho:list) {
+					for(paintHandler cho:handlerList) {
 						if(cho==this) continue;
 						for(Line line:cho.lineList) {
 							for(Brush b:line) {
@@ -110,7 +164,7 @@ public class paintHandler extends Thread {
 	}
 
 	private void broadcast(paintDTO dto) {
-		for(paintHandler cho:list) {
+		for(paintHandler cho:handlerList) {
 			try {
 				if(cho != this) {
 					cho.writer.writeObject(dto);

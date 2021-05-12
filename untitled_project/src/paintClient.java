@@ -15,13 +15,13 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
@@ -35,10 +35,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -67,6 +67,8 @@ public class paintClient {
 	private Graphics g;
 	private JMenuBar mb;
 	
+	private myEntry entry;
+	 
 	// color picker
 	private myColorPicker colorPicker;
 	private myChatBoard chatBoard;
@@ -350,7 +352,7 @@ public class paintClient {
     		}
         });
       
-     
+        
         initMenu();
         initSlider();
         initLayer();
@@ -366,6 +368,8 @@ public class paintClient {
         bb.setCol(colorPicker.getCol());
         
         chatBoard=new myChatBoard(writer);
+        
+        entry=new myEntry(writer);
         
         canvas.addMouseMotionListener( new MouseMotionListener() {
             
@@ -584,7 +588,9 @@ public class paintClient {
 	}
 	
 
+	/*
 	
+	 */
 	public paintClient() {
 		try {
 			socket=new Socket(serverIP,port);
@@ -594,6 +600,7 @@ public class paintClient {
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
+		
 		
 		setCanvas();
 		
