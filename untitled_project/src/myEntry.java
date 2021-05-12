@@ -16,6 +16,7 @@ import java.util.Scanner;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -33,23 +34,88 @@ public class myEntry extends JFrame {
 	private String roomID;
 	private String roomPW;
 	private String nickname;
-	
+	//방 만들기 메뉴
+	JFrame CMenu = new JFrame("방 만들기");
+	JFrame JMenu = new JFrame("방 입장");
+	JButton Create = new JButton("확인");
+	JButton Cancel = new JButton("취소");
+	JLabel IDLabel = new JLabel("방 이름");
+	JLabel PWLabel = new JLabel("패스워드");
+	JLabel nicknameLabel = new JLabel("닉네임");
+	JTextField RID = new JTextField();
+	JTextField RPW = new JTextField();
+	JTextField Nname = new JTextField();
 private Scanner in = new Scanner(System.in);
 	
-	public void getInfo() {
+	public void getInfoCreate() {
 		// roomID, roomPW, nickName 받기
-		System.out.println("Enter roomID: ");
-		roomID=in.next();
-		System.out.println("Enter roomPW: ");
-		roomPW=in.next();
-		System.out.println("Enter nickname: ");
-		nickname=in.next();
+		
+		CMenu.setSize(400,300);
+		CMenu.add(Create);
+		CMenu.add(Cancel);
+		CMenu.add(RID);
+		CMenu.add(RPW);
+		CMenu.add(Nname);
+		CMenu.add(IDLabel);
+		CMenu.add(PWLabel);
+		CMenu.add(nicknameLabel);
+		IDLabel.setBounds(50,50,75,25);
+		PWLabel.setBounds(50,100,75,25);
+		nicknameLabel.setBounds(50,150,75,25);
+		Create.setBounds(75, 200, 75, 25);
+		Cancel.setBounds(175,200,75,25);
+		RID.setBounds(150, 50, 75, 25);
+		RPW.setBounds(150, 100, 75, 25);
+		Nname.setBounds(150, 150, 75, 25);
+		CMenu.setLayout(null);
+		CMenu.setVisible(true);
+		Create.addActionListener(new createClick());
+		Cancel.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				CMenu.dispose();
+			}
+		});
 	}
-	
-	class createBttnClicked implements ActionListener{
+	public void getInfoJoin() {
+		// roomID, roomPW, nickName 받기
+		
+		JMenu.setSize(400,300);
+		JMenu.add(Create);
+		JMenu.add(Cancel);
+		JMenu.add(RID);
+		JMenu.add(RPW);
+		JMenu.add(Nname);
+		JMenu.add(IDLabel);
+		JMenu.add(PWLabel);
+		JMenu.add(nicknameLabel);
+		IDLabel.setBounds(50,50,75,25);
+		PWLabel.setBounds(50,100,75,25);
+		nicknameLabel.setBounds(50,150,75,25);
+		Create.setBounds(75, 200, 75, 25);
+		Cancel.setBounds(175,200,75,25);
+		RID.setBounds(150, 50, 75, 25);
+		RPW.setBounds(150, 100, 75, 25);
+		Nname.setBounds(150, 150, 75, 25);
+		JMenu.setLayout(null);
+		JMenu.setVisible(true);
+		Create.addActionListener(new joinClick());
+		Cancel.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				JMenu.dispose();
+			}
+		});
+	}
+	class createClick implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			getInfo();
+			//System.out.println("Enter roomID: ");
+			roomID=RID.getText();
+			//System.out.println("Enter roomPW: ");
+			roomPW=RPW.getText();
+			//System.out.println("Enter nickname: ");
+			nickname=Nname.getText();
 			
 			paintDTO dto=new paintDTO();
 	        dto.setCommand(Info.CREATE);
@@ -64,13 +130,21 @@ private Scanner in = new Scanner(System.in);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
+			
+			
+			CMenu.dispose();
+			dispose();
 		}
-		
 	}
-	class joinBttnClicked implements ActionListener{
+	class joinClick implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			getInfo();
+			//System.out.println("Enter roomID: ");
+			roomID=RID.getText();
+			//System.out.println("Enter roomPW: ");
+			roomPW=RPW.getText();
+			//System.out.println("Enter nickname: ");
+			nickname=Nname.getText();
 			
 			paintDTO dto=new paintDTO();
 	        dto.setCommand(Info.ENTER);
@@ -85,6 +159,25 @@ private Scanner in = new Scanner(System.in);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
+			JMenu.dispose();
+			dispose();
+		}
+	}
+	class createBttnClicked implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			getInfoCreate();
+			
+		}
+		
+	}
+	
+	
+	class joinBttnClicked implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			getInfoJoin();
+			
 		}
 	}
 	
@@ -96,7 +189,6 @@ private Scanner in = new Scanner(System.in);
 	public void appear() {
 		this.setVisible(true);
 	}
-	
 	
 	public myEntry(ObjectOutputStream writer) {
 
@@ -119,11 +211,14 @@ private Scanner in = new Scanner(System.in);
 	    createBttn.addActionListener(new createBttnClicked());
 	    joinBttn.addActionListener(new joinBttnClicked());
 	    
+	    
 	    this.add(createBttn);
 	    this.add(joinBttn);
 	    this.setVisible(true);
 	    
 		
 	}
+	
+	
 	
 }
