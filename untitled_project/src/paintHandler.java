@@ -40,6 +40,9 @@ public class paintHandler extends Thread {
 				if(dto.getCommand()==Info.ROOMLIST) {
 					sendRoomList();
 				}
+				else if(dto.getCommand() == Info.ROOMSETTINGALLCLEAR) {
+					
+				}
 				else if(dto.getCommand()==Info.CREATE) {;
 					String roomID=dto.getRoomID();
 					String roomPW=dto.getRoomPW();
@@ -98,17 +101,16 @@ public class paintHandler extends Thread {
 				}
 				//클라이언트 종료 메세지가 담긴 dto면 Handler 종료
 				else if(dto.getCommand()==Info.EXIT) {
-					reader.close();
-					writer.close();
-					socket.close();
+					
 					handlerList.remove(this);
 					System.out.println("exit client");
-					
 					paintDTO sendDTO=new paintDTO();
 					sendDTO.setCommand(Info.SEND);
 					sendDTO.setMessage(dto.getNickname()+"님 퇴장하셨습니다");
-					
 					broadcast(sendDTO);
+					reader.close();
+					writer.close();
+					socket.close();
 					break;
 				}
 				else if(dto.getCommand()==Info.JOIN) {

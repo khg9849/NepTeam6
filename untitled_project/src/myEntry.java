@@ -27,8 +27,9 @@ import javax.swing.JTextField;
 
 public class myEntry extends JFrame{
 	//private Socket socket;
+	
 	private ObjectOutputStream writer;
-
+	private ObjectInputStream reader;
 	private JButton createBttn;
 	private JButton joinBttn;
 	
@@ -36,6 +37,11 @@ public class myEntry extends JFrame{
 	private String roomID;
 	private String roomPW;
 	private String nickname;
+	
+	private boolean Cstat = false;
+	private Thread recv;
+	
+	
 	//방 만들기 메뉴
 	JFrame CMenu = new JFrame("방 만들기");
 	JFrame JMenu = new JFrame("방 입장");
@@ -48,17 +54,29 @@ public class myEntry extends JFrame{
 	JTextField RPW = new JTextField();
 	JTextField Nname = new JTextField();
 	
-	public boolean ValidationRoomID(String rlist, String rid) { //방 중복검사
+	public boolean ValidationRoomID(String rid) { //방 중복검사
+		String rlist;
 		
-
-		if(!rlist.isEmpty()) {	
-			if(rlist.contains(rid)) {
-				return true;
+		try {
+			paintDTO checkdto = (paintDTO)reader.readObject();
+			rlist = checkdto.getRoomList();
+			if(!rlist.isEmpty()) {	
+				if(rlist.contains(rid)) {
+					return true;
+				}
 			}
+			return false;
+		}catch(ClassNotFoundException e) {
+			e.printStackTrace();
+		}catch(IOException e1) {
+			e1.printStackTrace();
 		}
+
 		return false;
 	}
-	
+	public boolean currentStat() {
+		return this.Cstat;
+	}
 	public void getInfoCreate() {
 		// roomID, roomPW, nickName 받기
 		
@@ -131,6 +149,8 @@ public class myEntry extends JFrame{
 			
 			paintDTO dto=new paintDTO();
 			
+			
+			
 			dto.setCommand(Info.ROOMLIST);
 			try {
 				writer.writeObject(dto);
@@ -139,12 +159,13 @@ public class myEntry extends JFrame{
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
+			
+			System.out.println(ValidationRoomID(roomID));
 			dto.setCommand(Info.CREATE);
 	        dto.setRoomID(roomID);
 	        dto.setRoomPW(roomPW);
 	        dto.setNickname(nickname);
-	       
-
+	      
 			try {
 				writer.writeObject(dto);
 				writer.flush();
@@ -152,8 +173,11 @@ public class myEntry extends JFrame{
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
+			Cstat = true;
+			System.out.println(Cstat);
 			CMenu.dispose();
 			dispose();
+			
 		}
 			
 
@@ -170,6 +194,8 @@ public class myEntry extends JFrame{
 			nickname=Nname.getText();
 			
 			paintDTO dto=new paintDTO();
+			
+			
 			dto.setCommand(Info.ROOMLIST);
 			try {
 				writer.writeObject(dto);
@@ -222,10 +248,11 @@ public class myEntry extends JFrame{
 		this.setVisible(true);
 	}
 	
-	public myEntry(ObjectOutputStream writer) {
+	public myEntry(ObjectOutputStream writer, ObjectInputStream reader) {
 
 		this.writer=writer;
-
+		this.reader=reader;
+	
 		this.setTitle("Entry");
 		this.setSize(600,500);
 	    this.setLayout(new FlowLayout());

@@ -48,6 +48,8 @@ enum BrushMode{
 }
 
 public class paintClient{
+	private Thread recvThread;
+	
 	private Socket socket;
 
 	private ObjectOutputStream writer;
@@ -85,7 +87,9 @@ public class paintClient{
 	private JRadioButton rb_erase;
 	
 	private boolean isThread=true;
-
+	
+	
+	public boolean isRecvDataStart = true;
 	//LayerList 배열은 BufferImage의 배열
 	//LayerName 배열은 해당 Layer의 설정 이름
 	private ArrayList<Layer> layerList;
@@ -353,7 +357,7 @@ public class paintClient{
     		}
         });
         
-        entry=new myEntry(writer);
+        
        
         initMenu();
         
@@ -510,10 +514,14 @@ public class paintClient{
 	}
 	
 	public void recvData() {
-		Thread recvThread=new Thread(new Runnable() {
+		recvThread=new Thread(new Runnable() {
 
 			@Override
 			public void run() {
+				
+				while(!Thread.interrupted()) {
+					break;
+				}
 				while(isThread) {
 					try {
 						//dto 받음
@@ -599,6 +607,7 @@ public class paintClient{
 	
 	 */
 	public paintClient() {
+		
 		try {
 			socket=new Socket(serverIP,port);
 			writer=new ObjectOutputStream(socket.getOutputStream());
@@ -607,11 +616,18 @@ public class paintClient{
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
+		entry=new myEntry(writer, reader);
 		
-		
+		while(!entry.currentStat()) {
+			System.out.println();
+		}
+		System.out.println("test1234");
 		setCanvas();
 		
 		System.out.println("setting is done");
+		while(isRecvDataStart) {
+			
+		}
 		recvData();
 		
 	}
