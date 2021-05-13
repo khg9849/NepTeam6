@@ -60,7 +60,7 @@ public class paintHandler extends Thread {
 					}
 				
 					// 2. 중복 안 됨 => 방 생성 
-//					if(cflag) {
+					if(cflag) {
 						handlerList=new ArrayList<paintHandler>();
 						room=new Room(roomID,roomPW,handlerList);
 						roomList.add(room);
@@ -68,7 +68,7 @@ public class paintHandler extends Thread {
 						
 						room.enter(this);
 						System.out.println(nickname+" is entered "+roomID);
-//					}
+					}
 				}
 				else if(dto.getCommand()==Info.ENTER) {
 					String roomID=dto.getRoomID();
@@ -174,22 +174,28 @@ public class paintHandler extends Thread {
 		
 	}
 	private void sendRoomList() {
-		String roomlist="r.o.o.m.l.i.s.t/";
-		  for(Room room : roomList){
-		   String roomID=room.getRoomID();
-		   roomlist+=roomID+"/";
-		  }
-		  roomlist+="\n";
-		 paintDTO dto=new paintDTO();
-		 dto.setCommand(Info.ROOMLIST);
-		 dto.setRoomList(roomlist);
-		 System.out.println("we will send roomlist: "+roomlist);
-		 try {
-				this.writer.writeObject(dto);
-				this.writer.flush();
-			}catch(IOException e) {
-				e.printStackTrace();
-			}
+		String roomlist="/";
+		String roompwlist = "/";
+		for(Room room : roomList){
+			String roomID=room.getRoomID();
+			String roomPW=room.getPW();
+			roomlist+=roomID+"/";
+			roompwlist+=roomPW+"/";
+		}
+		roomlist+="\n";
+		roompwlist+="\n";
+		paintDTO dto=new paintDTO();
+		dto.setCommand(Info.ROOMLIST);
+		dto.setRoomList(roomlist);
+		dto.setRoomPwList(roompwlist);
+		System.out.println("we will send roomlist: "+roomlist);
+		System.out.println("we will send roompwlist: "+roompwlist);
+		try {
+			this.writer.writeObject(dto);
+			this.writer.flush();
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
 	}
 	private void broadcast(paintDTO dto) {
 		for(paintHandler cho:handlerList) {

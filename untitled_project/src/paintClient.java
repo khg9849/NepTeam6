@@ -54,7 +54,7 @@ public class paintClient{
 
 	private ObjectOutputStream writer;
 	private ObjectInputStream reader;
-	//private ObjectInputStream Entryreader;
+
 	private final String serverIP="127.0.0.1";
 	private final int port=9790;
 	
@@ -609,14 +609,14 @@ public class paintClient{
 			socket=new Socket(serverIP,port);
 			writer=new ObjectOutputStream(socket.getOutputStream());
 			reader=new ObjectInputStream(socket.getInputStream());
-			//Entryreader=new ObjectInputStream(socket.getInputStream());
+
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
 		entry=new myEntry(writer, reader);
 		
 		while(!entry.currentStat()) {
-			System.out.println();
+			System.out.print("");
 		}
 		System.out.println("test1234");
 		setCanvas();

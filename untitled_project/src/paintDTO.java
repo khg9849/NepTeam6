@@ -39,7 +39,7 @@ public class paintDTO implements Serializable {
 	private String roomPW;
 	
 	private String roomList;
-	
+	private String roompwList;
 	public String getRoomID() {
 		return roomID;
 	}
@@ -123,9 +123,16 @@ public class paintDTO implements Serializable {
 		return roomList;
 	}
 
-	public void setRoomList(String roomList) {
-		this.roomList = roomList;
+	public void setRoomList(String roompwList) {
+		this.roomList = roompwList;
+	}
+	
+	public String getRoomPwList() {
+		return roompwList;
 	}
 
+	public void setRoomPwList(String roompwList) {
+		this.roompwList = roompwList;
+	}
 	
 }
