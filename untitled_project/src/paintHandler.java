@@ -37,12 +37,11 @@ public class paintHandler extends Thread {
 				
 				//클라이언트에서 보낸 dto는 서버 안에 있는 Handler들이 받음
 				paintDTO dto = (paintDTO)reader.readObject();
+				boolean cflag = false;
 				if(dto.getCommand()==Info.ROOMLIST) {
 					sendRoomList();
 				}
-				else if(dto.getCommand() == Info.ROOMSETTINGALLCLEAR) {
-					
-				}
+				
 				else if(dto.getCommand()==Info.CREATE) {;
 					String roomID=dto.getRoomID();
 					String roomPW=dto.getRoomPW();
@@ -54,18 +53,22 @@ public class paintHandler extends Thread {
 						// (지금은 중복 무조건 안된다고 가정)
 						if(r.getRoomID().equals(roomID)) {
 							System.out.println("중복된다~!");
+							
 						}
+						else
+							cflag = true;
 					}
 				
 					// 2. 중복 안 됨 => 방 생성 
-					
-					handlerList=new ArrayList<paintHandler>();
-					room=new Room(roomID,roomPW,handlerList);
-					roomList.add(room);
-					System.out.println("room "+roomID+" is created");
-					
-					room.enter(this);
-					System.out.println(nickname+" is entered "+roomID);
+//					if(cflag) {
+						handlerList=new ArrayList<paintHandler>();
+						room=new Room(roomID,roomPW,handlerList);
+						roomList.add(room);
+						System.out.println("room "+roomID+" is created");
+						
+						room.enter(this);
+						System.out.println(nickname+" is entered "+roomID);
+//					}
 				}
 				else if(dto.getCommand()==Info.ENTER) {
 					String roomID=dto.getRoomID();
@@ -78,17 +81,12 @@ public class paintHandler extends Thread {
 					for(Room r:roomList) {
 						// 1. 방 찾음
 						if(r.getRoomID().equals(roomID)) {
-								if(r.getPW().equals(roomPW)) {
-									System.out.println("room "+roomID+" is found");
-									r.enter(this);
-									handlerList=r.getHandlerList();
-									System.out.println(nickname+" is entered "+roomID);
-									flag=1;
-								}
-								else {
-									System.out.println("Password Error");
-									
-								}
+								System.out.println("room "+roomID+" is found");
+								r.enter(this);
+								handlerList=r.getHandlerList();
+								System.out.println(nickname+" is entered "+roomID);
+								flag=1;
+								
 						}
 						
 					}
@@ -176,7 +174,7 @@ public class paintHandler extends Thread {
 		
 	}
 	private void sendRoomList() {
-		String roomlist="roomlist/";
+		String roomlist="r.o.o.m.l.i.s.t/";
 		  for(Room room : roomList){
 		   String roomID=room.getRoomID();
 		   roomlist+=roomID+"/";

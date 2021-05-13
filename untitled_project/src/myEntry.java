@@ -150,7 +150,6 @@ public class myEntry extends JFrame{
 			paintDTO dto=new paintDTO();
 			
 			
-			
 			dto.setCommand(Info.ROOMLIST);
 			try {
 				writer.writeObject(dto);
@@ -160,23 +159,30 @@ public class myEntry extends JFrame{
 				e1.printStackTrace();
 			}
 			
-			System.out.println(ValidationRoomID(roomID));
-			dto.setCommand(Info.CREATE);
-	        dto.setRoomID(roomID);
-	        dto.setRoomPW(roomPW);
-	        dto.setNickname(nickname);
-	      
-			try {
-				writer.writeObject(dto);
-				writer.flush();
-				writer.reset();
-			}catch(Exception e1) {
-				e1.printStackTrace();
+			
+			
+			if(!ValidationRoomID(roomID)) {
+				
+				dto.setCommand(Info.CREATE);
+		        dto.setRoomID(roomID);
+		        dto.setRoomPW(roomPW);
+		        dto.setNickname(nickname);
+
+				try {
+					writer.writeObject(dto);
+					writer.flush();
+					writer.reset();
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
+				Cstat = true;
+
+				CMenu.dispose();
+				dispose();
 			}
-			Cstat = true;
-			System.out.println(Cstat);
-			CMenu.dispose();
-			dispose();
+			else {
+				CMenu.dispose();
+			}
 			
 		}
 			
@@ -204,21 +210,26 @@ public class myEntry extends JFrame{
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
-	        dto.setCommand(Info.ENTER);
-	        dto.setRoomID(roomID);
-	        dto.setRoomPW(roomPW);
-	        dto.setNickname(nickname);
-	        
-			try {
-				writer.writeObject(dto);
-				writer.flush();
-				writer.reset();
-			}catch(Exception e1) {
-				e1.printStackTrace();
+			if(ValidationRoomID(roomID)) {
+		        dto.setCommand(Info.ENTER);
+		        dto.setRoomID(roomID);
+		        dto.setRoomPW(roomPW);
+		        dto.setNickname(nickname);
+		        
+				try {
+					writer.writeObject(dto);
+					writer.flush();
+					writer.reset();
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
+				Cstat = true;
+				JMenu.dispose();
+				dispose();
 			}
-			
-			JMenu.dispose();
-			dispose();
+			else {
+				JMenu.dispose();
+			}
 		}
 	}
 	class createBttnClicked implements ActionListener{

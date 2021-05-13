@@ -19,7 +19,7 @@ enum Info{
 	//ROOM
 	CREATE,ENTER,
 	
-	ROOMLIST, ROOMSETTINGALLCLEAR
+	ROOMLIST
 }
 
 public class paintDTO implements Serializable {

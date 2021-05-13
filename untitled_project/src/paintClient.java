@@ -48,7 +48,7 @@ enum BrushMode{
 }
 
 public class paintClient{
-	private Thread recvThread;
+
 	
 	private Socket socket;
 
@@ -514,14 +514,11 @@ public class paintClient{
 	}
 	
 	public void recvData() {
-		recvThread=new Thread(new Runnable() {
+		Thread recvThread=new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				
-				while(!Thread.interrupted()) {
-					break;
-				}
 				while(isThread) {
 					try {
 						//dto ¹ÞÀ½
@@ -625,9 +622,7 @@ public class paintClient{
 		setCanvas();
 		
 		System.out.println("setting is done");
-		while(isRecvDataStart) {
-			
-		}
+		
 		recvData();
 		
 	}
