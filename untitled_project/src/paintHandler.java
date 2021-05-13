@@ -37,30 +37,30 @@ public class paintHandler extends Thread {
 				
 				//클라이언트에서 보낸 dto는 서버 안에 있는 Handler들이 받음
 				paintDTO dto = (paintDTO)reader.readObject();
-				boolean cflag = false;
+				boolean cflag = true;
 				if(dto.getCommand()==Info.ROOMLIST) {
 					sendRoomList();
 				}
 				
-				else if(dto.getCommand()==Info.CREATE) {;
+				else if(dto.getCommand()==Info.CREATE) {
 					String roomID=dto.getRoomID();
 					String roomPW=dto.getRoomPW();
 					String nickname=dto.getNickname();
-					
 					// 중복되는 roomID 확인 
 					for(Room r:roomList) {
+						System.out.println("for\n");
 						// 1. 중복됨 => 메시지 띄우기
 						// (지금은 중복 무조건 안된다고 가정)
 						if(r.getRoomID().equals(roomID)) {
 							System.out.println("중복된다~!");
-							
+							cflag = false;
 						}
-						else
-							cflag = true;
+						
 					}
 				
 					// 2. 중복 안 됨 => 방 생성 
 					if(cflag) {
+
 						handlerList=new ArrayList<paintHandler>();
 						room=new Room(roomID,roomPW,handlerList);
 						roomList.add(room);
@@ -73,7 +73,6 @@ public class paintHandler extends Thread {
 				else if(dto.getCommand()==Info.ENTER) {
 					String roomID=dto.getRoomID();
 					String roomPW=dto.getRoomPW();
-					
 					String nickname=dto.getNickname();
 					int flag=0;
 					
@@ -174,8 +173,8 @@ public class paintHandler extends Thread {
 		
 	}
 	private void sendRoomList() {
-		String roomlist="/";
-		String roompwlist = "/";
+		String roomlist="r.o.o.m.l.i.s.t/";
+		String roompwlist = "p.w.l.i.s.t/";
 		for(Room room : roomList){
 			String roomID=room.getRoomID();
 			String roomPW=room.getPW();
