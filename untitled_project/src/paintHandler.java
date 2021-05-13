@@ -34,10 +34,13 @@ public class paintHandler extends Thread {
 	public void run() {
 		try {
 			while(true) {
+				
 				//클라이언트에서 보낸 dto는 서버 안에 있는 Handler들이 받음
 				paintDTO dto = (paintDTO)reader.readObject();
-				
-				if(dto.getCommand()==Info.CREATE) {;
+				if(dto.getCommand()==Info.ROOMLIST) {
+					sendRoomList();
+				}
+				else if(dto.getCommand()==Info.CREATE) {;
 					String roomID=dto.getRoomID();
 					String roomPW=dto.getRoomPW();
 					String nickname=dto.getNickname();
@@ -52,6 +55,7 @@ public class paintHandler extends Thread {
 					}
 				
 					// 2. 중복 안 됨 => 방 생성 
+					
 					handlerList=new ArrayList<paintHandler>();
 					room=new Room(roomID,roomPW,handlerList);
 					roomList.add(room);
@@ -71,12 +75,19 @@ public class paintHandler extends Thread {
 					for(Room r:roomList) {
 						// 1. 방 찾음
 						if(r.getRoomID().equals(roomID)) {
-							System.out.println("room "+roomID+" is found");
-							r.enter(this);
-							handlerList=r.getHandlerList();
-							System.out.println(nickname+" is entered "+roomID);
-							flag=1;
+								if(r.getPW().equals(roomPW)) {
+									System.out.println("room "+roomID+" is found");
+									r.enter(this);
+									handlerList=r.getHandlerList();
+									System.out.println(nickname+" is entered "+roomID);
+									flag=1;
+								}
+								else {
+									System.out.println("Password Error");
+									
+								}
 						}
+						
 					}
 
 					// 2. 방 없음
@@ -162,7 +173,24 @@ public class paintHandler extends Thread {
 		}
 		
 	}
-
+	private void sendRoomList() {
+		String roomlist="roomlist/";
+		  for(Room room : roomList){
+		   String roomID=room.getRoomID();
+		   roomlist+=roomID+"/";
+		  }
+		  roomlist+="\n";
+		 paintDTO dto=new paintDTO();
+		 dto.setCommand(Info.ROOMLIST);
+		 dto.setRoomList(roomlist);
+		 System.out.println("we will send roomlist: "+roomlist);
+		 try {
+				this.writer.writeObject(dto);
+				this.writer.flush();
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
+	}
 	private void broadcast(paintDTO dto) {
 		for(paintHandler cho:handlerList) {
 			try {

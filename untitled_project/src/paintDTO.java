@@ -17,7 +17,9 @@ enum Info{
 	EXIT, FETCH,
 	
 	//ROOM
-	CREATE,ENTER
+	CREATE,ENTER,
+	
+	ROOMLIST
 }
 
 public class paintDTO implements Serializable {
@@ -35,6 +37,8 @@ public class paintDTO implements Serializable {
 	
 	private String roomID;
 	private String roomPW;
+	
+	private String roomList;
 	
 	public String getRoomID() {
 		return roomID;
@@ -113,6 +117,14 @@ public class paintDTO implements Serializable {
 
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
+	}
+
+	public String getRoomList() {
+		return roomList;
+	}
+
+	public void setRoomList(String roomList) {
+		this.roomList = roomList;
 	}
 
 	

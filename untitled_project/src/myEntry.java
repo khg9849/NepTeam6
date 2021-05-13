@@ -10,6 +10,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
@@ -24,9 +25,10 @@ import javax.swing.JTextField;
 
 
 
-public class myEntry extends JFrame {
-	private Socket socket;
+public class myEntry extends JFrame{
+	//private Socket socket;
 	private ObjectOutputStream writer;
+
 	private JButton createBttn;
 	private JButton joinBttn;
 	
@@ -45,7 +47,17 @@ public class myEntry extends JFrame {
 	JTextField RID = new JTextField();
 	JTextField RPW = new JTextField();
 	JTextField Nname = new JTextField();
-private Scanner in = new Scanner(System.in);
+	
+	public boolean ValidationRoomID(String rlist, String rid) { //방 중복검사
+		
+
+		if(!rlist.isEmpty()) {	
+			if(rlist.contains(rid)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	public void getInfoCreate() {
 		// roomID, roomPW, nickName 받기
@@ -118,11 +130,8 @@ private Scanner in = new Scanner(System.in);
 			nickname=Nname.getText();
 			
 			paintDTO dto=new paintDTO();
-	        dto.setCommand(Info.CREATE);
-	        dto.setRoomID(roomID);
-	        dto.setRoomPW(roomPW);
-	        dto.setNickname(nickname);
-	        
+			
+			dto.setCommand(Info.ROOMLIST);
 			try {
 				writer.writeObject(dto);
 				writer.flush();
@@ -130,11 +139,25 @@ private Scanner in = new Scanner(System.in);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
-			
-			
+			dto.setCommand(Info.CREATE);
+	        dto.setRoomID(roomID);
+	        dto.setRoomPW(roomPW);
+	        dto.setNickname(nickname);
+	       
+
+			try {
+				writer.writeObject(dto);
+				writer.flush();
+				writer.reset();
+			}catch(Exception e1) {
+				e1.printStackTrace();
+			}
 			CMenu.dispose();
 			dispose();
 		}
+			
+
+		
 	}
 	class joinClick implements ActionListener{
 		@Override
@@ -147,6 +170,14 @@ private Scanner in = new Scanner(System.in);
 			nickname=Nname.getText();
 			
 			paintDTO dto=new paintDTO();
+			dto.setCommand(Info.ROOMLIST);
+			try {
+				writer.writeObject(dto);
+				writer.flush();
+				writer.reset();
+			}catch(Exception e1) {
+				e1.printStackTrace();
+			}
 	        dto.setCommand(Info.ENTER);
 	        dto.setRoomID(roomID);
 	        dto.setRoomPW(roomPW);
@@ -159,6 +190,7 @@ private Scanner in = new Scanner(System.in);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
+			
 			JMenu.dispose();
 			dispose();
 		}
@@ -193,7 +225,7 @@ private Scanner in = new Scanner(System.in);
 	public myEntry(ObjectOutputStream writer) {
 
 		this.writer=writer;
-		
+
 		this.setTitle("Entry");
 		this.setSize(600,500);
 	    this.setLayout(new FlowLayout());

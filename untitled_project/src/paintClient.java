@@ -47,11 +47,12 @@ enum BrushMode{
 	DRAW, ERASE
 }
 
-public class paintClient {
+public class paintClient{
 	private Socket socket;
+
 	private ObjectOutputStream writer;
 	private ObjectInputStream reader;
-	
+	//private ObjectInputStream Entryreader;
 	private final String serverIP="127.0.0.1";
 	private final int port=9790;
 	
@@ -351,9 +352,11 @@ public class paintClient {
     			
     		}
         });
-      
         
+        entry=new myEntry(writer);
+       
         initMenu();
+        
         initSlider();
         initLayer();
         initCanvas();
@@ -368,8 +371,8 @@ public class paintClient {
         bb.setCol(colorPicker.getCol());
         
         chatBoard=new myChatBoard(writer);
+
         
-        entry=new myEntry(writer);
         
         canvas.addMouseMotionListener( new MouseMotionListener() {
             
@@ -515,7 +518,11 @@ public class paintClient {
 					try {
 						//dto ¹ÞÀ½
 						paintDTO dto=(paintDTO)reader.readObject();
-						if(dto.getCommand()==Info.SEND) {
+						if(dto.getCommand()==Info.ROOMLIST) {
+							System.out.println("we got roomLIST!");
+							System.out.println(dto.getRoomList());
+						}
+						else if(dto.getCommand()==Info.SEND) {
 							chatBoard.readData(dto);
 						}
 						else if (dto.getCommand() == Info.LAYER) {
@@ -596,7 +603,7 @@ public class paintClient {
 			socket=new Socket(serverIP,port);
 			writer=new ObjectOutputStream(socket.getOutputStream());
 			reader=new ObjectInputStream(socket.getInputStream());
-			
+			//Entryreader=new ObjectInputStream(socket.getInputStream());
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
