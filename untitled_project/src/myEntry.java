@@ -80,10 +80,11 @@ public class myEntry extends JFrame{
 			}
 			if(strkRoom.countTokens() == 0) { // 남은 토큰이 하나도 없으면 리스트에 방이름이 없다는걸 의미합니다
 				System.out.println("no room");
+				JoinError = "존재하지 않는 방입니다.";
 				return false;
 			}
 			else {
-				for(int i = 0; i < count; i++) {//남은토큰이 있으면 카운트만큼 다음토큰으로 전진
+				for(int i = 0; i < count-1; i++) {//남은토큰이 있으면 카운트만큼 다음토큰으로 전진
 					System.out.println(strkPw.nextToken());
 				}
 				if(strkPw.nextToken().equals(rpw)) {//해당토큰 비밀번호랑 같다면
@@ -96,7 +97,7 @@ public class myEntry extends JFrame{
 		}catch(IOException e1) {
 			e1.printStackTrace();
 		}
-		System.out.println("pw error");
+		JoinError = "비밀번호가 다릅니다.";
 		return false;
 	}
 	
@@ -364,14 +365,15 @@ public class myEntry extends JFrame{
 	    
 	    createBttn=new JButton("create");
 	    joinBttn=new JButton("join");
-	    
-	    
+	    createBttn.setBounds(167,400,100,50);
+	    joinBttn.setBounds(317,400,100,50);
 	    createBttn.addActionListener(new createBttnClicked());
 	    joinBttn.addActionListener(new joinBttnClicked());
 	    
 	    
 	    this.add(createBttn);
 	    this.add(joinBttn);
+	    this.setLayout(null);
 	    this.setVisible(true);
 	    
 		

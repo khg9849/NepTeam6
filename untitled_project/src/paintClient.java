@@ -54,7 +54,7 @@ public class paintClient{
 
 	private ObjectOutputStream writer;
 	private ObjectInputStream reader;
-	//private ObjectInputStream Entryreader;
+
 	private final String serverIP="127.0.0.1";
 	private final int port=9790;
 	
@@ -287,8 +287,8 @@ public class paintClient{
 		_g.fillRect(0, 0, 400, 400);
 		for(Layer cho:layerList) {
 			bi.getGraphics().drawImage(cho, 0, 0, 400,400, null);
+			canvas.repaint();
 		}
-		canvas.repaint();
 	}
 	
 	public void initCanvas() {
@@ -389,15 +389,16 @@ public class paintClient{
                  if(brushMode == BrushMode.DRAW) {
                 	Graphics2D g2d = (Graphics2D) g;
           			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
-          			g2d.setComposite(ac);             	 
+          			g2d.setComposite(ac);
+                	bb.paint(g);                	 
                  }
                  else if(brushMode == BrushMode.ERASE) {
          			Graphics2D g2d = (Graphics2D) g;
          			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.DST_OUT);
          			g2d.setComposite(ac);
+         			bb.paint(g);
                  }
-
-      			 bb.paint(g);
+                 
                  updateCanvas();
                  
                  //브러시를 dto에 넣어서 보냄
@@ -438,14 +439,16 @@ public class paintClient{
         			Graphics2D g2d = (Graphics2D) g;
           			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
           			g2d.setComposite(ac);
+        			bb.paint(g);
+        			updateCanvas();
         		}
         		else if(brushMode == BrushMode.ERASE) {
         			Graphics2D g2d = (Graphics2D) g;
         			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.DST_OUT);
         			g2d.setComposite(ac);
+        			bb.paint(g);
+        			updateCanvas();
         		}
-        		bb.paint(g);
-    			updateCanvas();
 
             	// 새로운 line이 입력된다는 info 전송
         		//필수 항목 4가지
@@ -570,6 +573,7 @@ public class paintClient{
 							
 						     //실시간 구현된 브러시를 마찬가지로 실시간 재현
 							recvbb.paint(recvG);
+							recvbb.repaint();
 						    updateCanvas();
 						    
 						}
@@ -605,7 +609,7 @@ public class paintClient{
 			socket=new Socket(serverIP,port);
 			writer=new ObjectOutputStream(socket.getOutputStream());
 			reader=new ObjectInputStream(socket.getInputStream());
-			//Entryreader=new ObjectInputStream(socket.getInputStream());
+
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -614,9 +618,9 @@ public class paintClient{
 		while(!entry.currentStat()) {
 			System.out.print("");
 		}
-		System.out.println("test1234");
-		setCanvas();
 		
+		
+		setCanvas();
 		System.out.println("setting is done");
 		
 		recvData();

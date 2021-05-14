@@ -123,8 +123,8 @@ public class paintDTO implements Serializable {
 		return roomList;
 	}
 
-	public void setRoomList(String roompwList) {
-		this.roomList = roompwList;
+	public void setRoomList(String roomList) {
+		this.roomList = roomList;
 	}
 	
 	public String getRoomPwList() {
