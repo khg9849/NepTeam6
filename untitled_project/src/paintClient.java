@@ -63,6 +63,8 @@ public class paintClient{
 	public int getClientUID() {return ClientUID;}
 	public void setClientUID(int n) {ClientUID = n;}
 	
+	private String nickname;
+	
 	private JFrame f;
 	
 	private JLabel canvas;
@@ -342,17 +344,17 @@ public class paintClient{
         f.setLayout(null);
         f.addWindowListener(new WindowAdapter() {
         	public void windowClosing(WindowEvent e) {
+        		//EXIT(1): canvas에서 창을 끄면 핸들러에 EXIT1 전송
     			paintDTO dto=new paintDTO();
-    			dto.setNickname(chatBoard.getNickname());
-    			dto.setCommand(Info.EXIT);
+    			dto.setNickname(nickname);
+    			dto.setCommand(Info.EXIT1);
     			try {
     				writer.writeObject(dto);
     				writer.flush();
-    				System.out.println("서버에 EXIT 전송");
+    				System.out.println("서버에 EXIT1 전송");
     			}catch(Exception e1) {
     				e1.printStackTrace();
     			}
-    			isThread=false;
     			
     		}
         });
@@ -539,8 +541,25 @@ public class paintClient{
 								delLayer(deleteLayerIndex);
 							}
 						}
-						else if (dto.getCommand() == Info.EXIT) {
-							
+						//EXIT(3): 클라이언트에게서 EXIT2을 받으면 EXIT3 재전송하고 스레드 종료 
+						else if (dto.getCommand() == Info.EXIT2) {
+							System.out.println("receive EXIT2 from handler");
+							paintDTO sendDTO=new paintDTO();
+							sendDTO.setCommand(Info.EXIT3);
+							sendDTO.setNickname(nickname);
+							try {
+								writer.writeObject(sendDTO);
+								writer.flush();
+								writer.reset();
+							}catch(IOException e) {
+								e.printStackTrace();
+							}
+							System.out.println("send EXIT3 to server");
+							break;
+						}
+						// EXIT(5): 전송받은 EXIT4를 통해 어떤 클라이언트가 접속을 종료했는지 파악
+						else if (dto.getCommand() == Info.EXIT4) {
+							System.out.println("receive EXIT4 from "+dto.getNickname());
 						}
 						else if (dto.getCommand() == Info.DRAW){
 							//dto.getB().print();
@@ -579,15 +598,16 @@ public class paintClient{
 						e1.printStackTrace();
 					}
 				}
-				
+				System.exit(0);
+				/*
 				try {
 					reader.close();
 					writer.close();
 					socket.close();
 				}catch(Exception e1) {
 					e1.printStackTrace();
-				}
-				System.exit(0);
+				}*/
+				
 			}
 			
 		});
@@ -614,6 +634,8 @@ public class paintClient{
 		while(!entry.currentStat()) {
 			System.out.print("");
 		}
+		nickname=entry.getNickname();
+		
 		System.out.println("test1234");
 		setCanvas();
 		

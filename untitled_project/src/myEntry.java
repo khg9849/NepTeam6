@@ -38,6 +38,10 @@ public class myEntry extends JFrame{
 	private String roomPW;
 	private String nickname;
 	
+	public String getNickname() {
+		return nickname;
+	}
+
 	private boolean Cstat = false;
 
 	
