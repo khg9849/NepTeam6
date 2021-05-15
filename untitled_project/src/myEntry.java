@@ -13,15 +13,20 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import java.util.StringTokenizer;
 
 
@@ -32,27 +37,28 @@ public class myEntry extends JFrame{
 	private ObjectInputStream reader;
 	private JButton createBttn;
 	private JButton joinBttn;
+	private JButton QuickjoinBttn;
 	
-	private Room room;
+	//private Room room;
 	private String roomID;
 	private String roomPW;
 	private String nickname;
-	
-	public String getNickname() {
-		return nickname;
-	}
-
+	private String QjoinID = "";
 	private boolean Cstat = false;
 
-	
+	private String[] roomList;
 	private String CreateError = new String("이미 존재하는 방입니다.");
 	private String JoinError = new String("방이 존재하지 않습니다.");
+	
 	//방 만들기 메뉴
 	JFrame CMenu = new JFrame("방 만들기");
 	JFrame JMenu = new JFrame("방 입장");
+	JFrame QJMenu;
 	JFrame Error = new JFrame("오류");
 	JButton ErrorBtn = new JButton("확인");
 	JButton Create = new JButton("확인");
+	JButton Join = new JButton("입장");
+	JButton QJoin = new JButton("입장");
 	JButton Cancel = new JButton("취소");
 	JLabel IDLabel = new JLabel("방 이름");
 	JLabel PWLabel = new JLabel("패스워드");
@@ -62,45 +68,91 @@ public class myEntry extends JFrame{
 	JTextField RPW = new JTextField();
 	JTextField Nname = new JTextField();
 	
-	public boolean ValidationRoomPW(String rid, String rpw) {//비밀번호 체크하기
-		String rlist;
-		String pwlist;
-		StringTokenizer strkRoom;//토큰생성
-		StringTokenizer strkPw;
+	private String Originridlist;//초기 방 id정보
+	private String Originrpwlist;//초기 방 pw정보
+	
+	public String getNickname() {
+		return nickname;
+	}
+
+	
+	public String[] makeList(){//string 배열에 roomlist를 토큰으로 쪼개서 저장
+		
+		String[] rlist = new String[10]; // 방 최대 리스트 개수 : 100
+		String temp;
 		int count = 0;
+		StringTokenizer strkRoom;
+		
+		temp = Originridlist;
+		strkRoom = new StringTokenizer(temp, "/");// /단위로 토큰 쪼개버려
+		
+		while(strkRoom.hasMoreTokens()){ //토큰이 비어있을때까지
+			rlist[count++] = strkRoom.nextToken();//리스트에 방 이름 추가
+		}
+			
+		
+		
+		return rlist;
+	}
+	
+	public void setRoomIDPWList() {//id pw를 미리 받아와서 세팅
+		paintDTO dto = new paintDTO();
+		dto.setCommand(Info.ROOMLIST);
+		try {
+			writer.writeObject(dto);
+			writer.flush();
+			writer.reset();
+		}catch(Exception e1) {
+			e1.printStackTrace();
+		}
+		
 		try {
 			paintDTO checkdto = (paintDTO)reader.readObject();
-			rlist = checkdto.getRoomList();
-			pwlist = checkdto.getRoomPwList();
-			strkRoom = new StringTokenizer(rlist, "/");// /단위로 토큰 쪼개버려
-			strkPw = new StringTokenizer(pwlist, "/");
 			
-			while(strkRoom.hasMoreTokens()){ //토큰이 비어있을때까지
-				count++;
-				if(strkRoom.nextToken().equals(rid)) { // 다음토큰이랑 같으면 멈춰!
-					break;
-				}
-				System.out.println(count);
-			}
-			if(strkRoom.countTokens() == 0) { // 남은 토큰이 하나도 없으면 리스트에 방이름이 없다는걸 의미합니다
-				System.out.println("no room");
-				JoinError = "존재하지 않는 방입니다.";
-				return false;
-			}
-			else {
-				for(int i = 0; i < count-1; i++) {//남은토큰이 있으면 카운트만큼 다음토큰으로 전진
-					System.out.println(strkPw.nextToken());
-				}
-				if(strkPw.nextToken().equals(rpw)) {//해당토큰 비밀번호랑 같다면
-					return true;//true를 반환
-				}
-			}
+			Originridlist = checkdto.getRoomList();
+			Originrpwlist = checkdto.getRoomPwList();
 			
 		}catch(ClassNotFoundException e) {
 			e.printStackTrace();
 		}catch(IOException e1) {
 			e1.printStackTrace();
 		}
+	}
+	
+	public boolean ValidationRoomPW(String rid, String rpw) {//비밀번호 체크하기
+		String rlist;
+		String pwlist;
+		StringTokenizer strkRoom;//토큰생성
+		StringTokenizer strkPw;
+		int count = 0;
+		
+		rlist = Originridlist;
+		pwlist = Originrpwlist;
+		strkRoom = new StringTokenizer(rlist, "/");// /단위로 토큰 쪼개버려
+		strkPw = new StringTokenizer(pwlist, "/");
+		
+		while(strkRoom.hasMoreTokens()){ //토큰이 비어있을때까지
+			count++;
+			if(strkRoom.nextToken().equals(rid)) { // 다음토큰이랑 같으면 멈춰!
+				break;
+			}
+			System.out.println(count);
+		}
+		if(strkRoom.countTokens() == 0) { // 남은 토큰이 하나도 없으면 리스트에 방이름이 없다는걸 의미합니다
+			//System.out.println("no room");
+			JoinError = "존재하지 않는 방입니다.";
+			return false;
+		}
+		else {
+			for(int i = 0; i < count-1; i++) {//남은토큰이 있으면 카운트만큼 다음토큰으로 전진
+				System.out.println(strkPw.nextToken());
+			}
+			if(strkPw.nextToken().equals(rpw)) {//해당토큰 비밀번호랑 같다면
+				return true;//true를 반환
+			}
+		}
+			
+		
 		JoinError = "비밀번호가 다릅니다.";
 		return false;
 	}
@@ -109,22 +161,14 @@ public class myEntry extends JFrame{
 	public boolean ValidationRoomID(String rid) { //방 중복검사
 		String rlist;
 		
-		try {
-			paintDTO checkdto = (paintDTO)reader.readObject();
-			rlist = checkdto.getRoomList();
-			if(!rlist.isEmpty()) {	
-				if(rlist.contains(rid)) {
-					return true;
-				}
+		rlist = Originridlist;
+		if(!rlist.isEmpty()) {	
+			if(rlist.contains(rid)) {
+				return true;
 			}
-			return false;
-		}catch(ClassNotFoundException e) {
-			e.printStackTrace();
-		}catch(IOException e1) {
-			e1.printStackTrace();
 		}
-
 		return false;
+		
 	}
 	public boolean currentStat() {
 		return this.Cstat;
@@ -198,32 +242,41 @@ public class myEntry extends JFrame{
 			}
 		});
 	}
-	public void getInfoJoin() {
+	public void getInfoJoin(String roomid) {
 		// roomID, roomPW, nickName 받기
 		
 		JMenu.setSize(400,300);
-		JMenu.add(Create);
+		JMenu.add(Join);
 		JMenu.add(Cancel);
-		JMenu.add(RID);
+		
 		JMenu.add(RPW);
 		JMenu.add(Nname);
-		JMenu.add(IDLabel);
+		
 		JMenu.add(PWLabel);
 		JMenu.add(nicknameLabel);
-		IDLabel.setBounds(50,50,75,25);
+		
 		PWLabel.setBounds(50,100,75,25);
 		nicknameLabel.setBounds(50,150,75,25);
-		Create.setBounds(75, 200, 75, 25);
+		Join.setBounds(75, 200, 75, 25);
 		Cancel.setBounds(175,200,75,25);
-		RID.setText("");
+		if(roomid.isEmpty()) {
+			IDLabel.setBounds(50,50,75,25);
+			JMenu.add(RID);
+			JMenu.add(IDLabel);
+			RID.setText("");
+			RID.setBounds(150, 50, 75, 25);
+		}
+		else {
+			RID.setText(roomid);
+		}
 		RPW.setText("");
 		Nname.setText("");
-		RID.setBounds(150, 50, 75, 25);
+		
 		RPW.setBounds(150, 100, 75, 25);
 		Nname.setBounds(150, 150, 75, 25);
 		JMenu.setLayout(null);
 		JMenu.setVisible(true);
-		Create.addActionListener(new joinClick());
+		Join.addActionListener(new joinClick());
 		Cancel.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -231,6 +284,42 @@ public class myEntry extends JFrame{
 			}
 		});
 	}
+	
+	public void getInfoQJoin(String roomid) {
+		// roomID, roomPW, nickName 받기
+		QJMenu = new JFrame(roomid + " 입장");
+		QJMenu.setSize(400,300);
+		QJMenu.add(QJoin);
+		QJMenu.add(Cancel);
+		
+		QJMenu.add(RPW);
+		QJMenu.add(Nname);
+		
+		QJMenu.add(PWLabel);
+		QJMenu.add(nicknameLabel);
+		
+		PWLabel.setBounds(50,100,75,25);
+		nicknameLabel.setBounds(50,150,75,25);
+		QJoin.setBounds(75, 200, 75, 25);
+		Cancel.setBounds(175,200,75,25);
+		
+		
+		RPW.setText("");
+		Nname.setText("");
+		
+		RPW.setBounds(150, 100, 75, 25);
+		Nname.setBounds(150, 150, 75, 25);
+		QJMenu.setLayout(null);
+		QJMenu.setVisible(true);
+		QJoin.addActionListener(new QjoinClick());
+		Cancel.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				QJMenu.dispose();
+			}
+		});
+	}
+	
 	class createClick implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
@@ -280,10 +369,59 @@ public class myEntry extends JFrame{
 
 		
 	}
+	class QjoinClick implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			
+			roomID=QjoinID;
+			roomPW=RPW.getText();
+			nickname=Nname.getText();
+			
+			paintDTO dto=new paintDTO();
+			
+			
+			dto.setCommand(Info.ROOMLIST);
+			try {
+				writer.writeObject(dto);
+				writer.flush();
+				writer.reset();
+			}catch(Exception e1) {
+				e1.printStackTrace();
+			}
+
+			if(ValidationRoomPW(roomID, roomPW)) {
+		        dto.setCommand(Info.ENTER);
+		        dto.setRoomID(roomID);
+		        dto.setRoomPW(roomPW);
+		        dto.setNickname(nickname);
+		        
+				try {
+					writer.writeObject(dto);
+					writer.flush();
+					writer.reset();
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
+				Cstat = true;
+				QJMenu.dispose();
+				dispose();
+			}
+			else {
+				
+				JoinError();
+				QJMenu.dispose();
+			}
+			
+		}
+	}
+	
+	
+	
+	
 	class joinClick implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-
+			
 			roomID=RID.getText();
 			roomPW=RPW.getText();
 			nickname=Nname.getText();
@@ -338,12 +476,18 @@ public class myEntry extends JFrame{
 	class joinBttnClicked implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			getInfoJoin();
+			getInfoJoin("");
 			
 		}
 	}
 	
-	
+	class QjoinBttnClicked implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			getInfoQJoin(QjoinID);
+			
+		}
+	}
 	
 	public void disappear() {
 		this.setVisible(false);
@@ -354,27 +498,48 @@ public class myEntry extends JFrame{
 	
 	public myEntry(ObjectOutputStream writer, ObjectInputStream reader) {
 
+		
 		this.writer=writer;
 		this.reader=reader;
 	
-		this.setTitle("Entry");
+		this.setTitle("Open Canvas");
 		this.setSize(600,500);
 	    this.setLayout(new FlowLayout());
-	   // this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+	    this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 	    this.addWindowListener(new WindowAdapter() {
         	public void windowClosing(WindowEvent e) {
     			disappear();
         	}
         });
 	    
+	    setRoomIDPWList();
+	    roomList = makeList();
+	    
+	    JList roomJList = new JList(roomList);
+	    roomJList.setBounds(142,100,300,200);
 	    createBttn=new JButton("create");
 	    joinBttn=new JButton("join");
-	    createBttn.setBounds(167,400,100,50);
-	    joinBttn.setBounds(317,400,100,50);
+	    QuickjoinBttn = new JButton("Qjoin");
+	    createBttn.setBounds(107,400,100,50);
+	    joinBttn.setBounds(257,400,100,50);
+	    QuickjoinBttn.setBounds(407,400,100,50);
 	    createBttn.addActionListener(new createBttnClicked());
 	    joinBttn.addActionListener(new joinBttnClicked());
+	    QuickjoinBttn.addActionListener(new QjoinBttnClicked());
 	    
+	    roomJList.addListSelectionListener(new ListSelectionListener() {
+	    	
+	    	public void valueChanged(ListSelectionEvent e) {
+	    		if(!e.getValueIsAdjusting()) {
+	    			QjoinID = (String) roomJList.getSelectedValue();
+	    			System.out.println(QjoinID);
+	    		}
+	    	}
+	    	
+	    });
 	    
+	    this.add(roomJList);
+	    this.add(QuickjoinBttn);
 	    this.add(createBttn);
 	    this.add(joinBttn);
 	    this.setLayout(null);

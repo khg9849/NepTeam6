@@ -94,9 +94,9 @@ public class paintHandler extends Thread {
 
 					// 2. 방 없음
 					// (지금은 중복 무조건 방 있다고 가정)
-					if(flag==0) {
-						System.out.println("방 없다~!");
-					}
+//					if(flag==0) {
+//						System.out.println("방 없다~!");
+//					}
 				}
 				//EXIT(2): 클라이언트에게서 EXIT1을 받으면 다시 EXIT2 전송
 				else if(dto.getCommand()==Info.EXIT1) {
@@ -208,8 +208,8 @@ public class paintHandler extends Thread {
 		
 	}
 	private void sendRoomList() {
-		String roomlist="r.o.o.m.l.i.s.t/";
-		String roompwlist = "p.w.l.i.s.t/";
+		String roomlist="/";
+		String roompwlist = "/";
 		for(Room room : roomList){
 			String roomID=room.getRoomID();
 			String roomPW=room.getPW();
