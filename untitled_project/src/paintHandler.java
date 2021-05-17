@@ -69,7 +69,18 @@ public class paintHandler extends Thread {
 						
 						room.enter(this);
 						System.out.println(nickname+" is entered "+roomID);
-						
+						paintDTO sendDTO=new paintDTO();
+						sendDTO.setCommand(Info.CREATE);
+						sendDTO.setRoomID(roomID);
+						sendDTO.setNickname(nickname);
+						sendDTO.setUserCnt(room.getUserCnt());
+						try {
+							writer.writeObject(sendDTO);
+							writer.flush();
+							writer.reset();
+						}catch(IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 				else if(dto.getCommand()==Info.ENTER) {
@@ -86,6 +97,18 @@ public class paintHandler extends Thread {
 								r.enter(this);
 								handlerList=r.getHandlerList();
 								System.out.println(nickname+" is entered "+roomID);
+								paintDTO sendDTO=new paintDTO();
+								sendDTO.setCommand(Info.JOIN);
+								sendDTO.setNickname(nickname);
+								sendDTO.setUserCnt(r.getUserCnt());
+								broadcast(sendDTO);
+								try {
+									writer.writeObject(sendDTO);
+									writer.flush();
+									writer.reset();
+								}catch(IOException e) {
+									e.printStackTrace();
+								}
 								flag=1;
 								
 						}
@@ -231,6 +254,7 @@ public class paintHandler extends Thread {
 			e.printStackTrace();
 		}
 	}
+
 	private void broadcast(paintDTO dto) {
 		if(handlerList.isEmpty()) return;
 		System.out.println("handlerList is not empty. so server can broadcast");

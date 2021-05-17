@@ -45,7 +45,8 @@ public class myEntry extends JFrame{
 	private String nickname;
 	private String QjoinID = "";
 	private boolean Cstat = false;
-
+	private int userCnt;
+	
 	private String[] roomList;
 	private String CreateError = new String("이미 존재하는 방입니다.");
 	private String JoinError = new String("방이 존재하지 않습니다.");
@@ -71,6 +72,10 @@ public class myEntry extends JFrame{
 	private String Originridlist;//초기 방 id정보
 	private String Originrpwlist;//초기 방 pw정보
 	
+	
+	public String getRoomID() {
+		return roomID;
+	}
 	public String getNickname() {
 		return nickname;
 	}
@@ -546,6 +551,9 @@ public class myEntry extends JFrame{
 	    this.setVisible(true);
 	    
 		
+	}
+	public int getUserCnt() {
+		return userCnt;
 	}
 	
 	

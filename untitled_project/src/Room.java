@@ -6,8 +6,10 @@ public class Room {
 	private String roomID;
 	private String PW;
 	private String nickName;
+	private int userCnt;
 	private int maxUser;
 	private ArrayList<paintHandler> handlerList;
+	
 	public ArrayList<paintHandler> getHandlerList() {
 		return handlerList;
 	}
@@ -22,9 +24,11 @@ public class Room {
 		this.roomID=roomName;
 		this.PW=PW;
 		this.handlerList=handlerList;
+		this.userCnt=0;
 	}
 	
 	public void enter(paintHandler handler) {
+		setUserCnt(getUserCnt()+1);
 		handlerList.add(handler);
 	}
 	
@@ -67,6 +71,14 @@ public class Room {
 		// TODO Auto-generated method stub
 		
 	}
-	
+
+	public int getUserCnt() {
+		return userCnt;
+	}
+
+	public void setUserCnt(int userCnt) {
+		this.userCnt = userCnt;
+	}
+
 	
 }

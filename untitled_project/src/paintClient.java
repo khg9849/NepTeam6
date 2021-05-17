@@ -63,7 +63,9 @@ public class paintClient{
 	public int getClientUID() {return ClientUID;}
 	public void setClientUID(int n) {ClientUID = n;}
 	
+	private String roomID;
 	private String nickname;
+	private int userCnt;
 	
 	private JFrame f;
 	
@@ -376,7 +378,7 @@ public class paintClient{
         bb.setBounds(20,20,400,400);
         bb.setCol(colorPicker.getCol());
         
-        chatBoard=new myChatBoard(writer);
+        chatBoard=new myChatBoard(writer,roomID,nickname,userCnt);
 
         
         
@@ -541,6 +543,12 @@ public class paintClient{
 								delLayer(deleteLayerIndex);
 							}
 						}
+						else if(dto.getCommand()==Info.CREATE) {
+							chatBoard.create(dto);
+						}
+						else if(dto.getCommand()==Info.JOIN) {
+							chatBoard.enter(dto);
+						}
 						//EXIT(3): 클라이언트에게서 EXIT2을 받으면 EXIT3 재전송하고 스레드 종료 
 						else if (dto.getCommand() == Info.EXIT2) {
 							System.out.println("receive EXIT2 from handler");
@@ -560,6 +568,7 @@ public class paintClient{
 						// EXIT(5): 전송받은 EXIT4를 통해 어떤 클라이언트가 접속을 종료했는지 파악
 						else if (dto.getCommand() == Info.EXIT4) {
 							System.out.println("receive EXIT4 from "+dto.getNickname());
+							chatBoard.exit1(dto);
 						}
 						else if (dto.getCommand() == Info.DRAW){
 							//dto.getB().print();
@@ -635,6 +644,8 @@ public class paintClient{
 			System.out.print("");
 		}
 		nickname=entry.getNickname();
+		roomID=entry.getRoomID();
+		userCnt=entry.getUserCnt();
 		
 		System.out.println("test1234");
 		setCanvas();
