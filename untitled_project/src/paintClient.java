@@ -15,12 +15,15 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
@@ -55,8 +58,11 @@ public class paintClient{
 	private ObjectOutputStream writer;
 	private ObjectInputStream reader;
 	//private ObjectInputStream Entryreader;
-	private final String serverIP="127.0.0.1";
+	//127.0.0.1
+	//118.91.36.52
+	private final String serverIP="118.91.36.52";
 	private final int port=9790;
+	private paintDTO dto;
 	
 	//Client 고유 번호
 	private int ClientUID;
@@ -103,6 +109,31 @@ public class paintClient{
 	private int addLayer_initcount = 0;
 	private int selected_layerindex = 0;
 		
+	public void readData() throws IOException, ClassNotFoundException {
+		String base64Member = (String) this.reader.readObject();
+		
+		byte[] serializedMember = Base64.getDecoder().decode(base64Member);
+		try(ByteArrayInputStream bais = new ByteArrayInputStream(serializedMember)){
+			try(ObjectInputStream ois = new ObjectInputStream(bais)){
+				Object objectMember = ois.readObject();
+				dto = (paintDTO) objectMember;
+			}
+		}
+	}
+	public void writeData(paintDTO dto) throws IOException {
+		byte[] serializedMember;
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+			try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
+				oos.writeObject(dto);
+				System.out.println("Handler test1111");
+				serializedMember = baos.toByteArray();
+			}
+		}
+		this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
+		this.writer.flush();
+		this.writer.reset();
+	}
+	
 	public void initSlider() {
 		diaCol = new JSlider(JSlider.HORIZONTAL, 1, 100, 20);
 		diaCol.setBounds(450,20, 100,30);
@@ -141,9 +172,7 @@ public class paintClient{
     			paintDTO dto=new paintDTO();
                 dto.setCommand(Info.FETCH);
 				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -194,9 +223,7 @@ public class paintClient{
 				System.out.println("layerlist "+ layerList.size());
 				
 				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -216,9 +243,7 @@ public class paintClient{
 				System.out.println("layerlist "+ layerList.size());
                  
 				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -351,8 +376,7 @@ public class paintClient{
     			dto.setNickname(nickname);
     			dto.setCommand(Info.EXIT1);
     			try {
-    				writer.writeObject(dto);
-    				writer.flush();
+					writeData(dto);
     				System.out.println("서버에 EXIT1 전송");
     			}catch(Exception e1) {
     				e1.printStackTrace();
@@ -413,9 +437,7 @@ public class paintClient{
                  dto.setBrushMode(brushMode);
                  
 				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -460,9 +482,7 @@ public class paintClient{
                 dto.setBrushMode(brushMode);
                 
 				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -473,9 +493,7 @@ public class paintClient{
         		paintDTO dto=new paintDTO();
                 dto.setCommand(Info.LINE_FINISH);
 				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -523,7 +541,9 @@ public class paintClient{
 				while(isThread) {
 					try {
 						//dto 받음
-						paintDTO dto=(paintDTO)reader.readObject();
+						dto = null;
+						readData();
+						
 						if(dto.getCommand()==Info.ROOMLIST) {
 							System.out.println("we got roomLIST!");
 							System.out.println(dto.getRoomList());
@@ -556,9 +576,7 @@ public class paintClient{
 							sendDTO.setCommand(Info.EXIT3);
 							sendDTO.setNickname(nickname);
 							try {
-								writer.writeObject(sendDTO);
-								writer.flush();
-								writer.reset();
+								writeData(sendDTO);
 							}catch(IOException e) {
 								e.printStackTrace();
 							}

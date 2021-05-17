@@ -9,11 +9,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Scanner;
 
 import javax.swing.JButton;
@@ -46,6 +49,7 @@ public class myEntry extends JFrame{
 	private String QjoinID = "";
 	private boolean Cstat = false;
 	private int userCnt;
+	private paintDTO dto;
 	
 	private String[] roomList;
 	private String CreateError = new String("이미 존재하는 방입니다.");
@@ -80,6 +84,30 @@ public class myEntry extends JFrame{
 		return nickname;
 	}
 
+	public void readData() throws IOException, ClassNotFoundException {
+		String base64Member = (String) this.reader.readObject();
+		
+		byte[] serializedMember = Base64.getDecoder().decode(base64Member);
+		try(ByteArrayInputStream bais = new ByteArrayInputStream(serializedMember)){
+			try(ObjectInputStream ois = new ObjectInputStream(bais)){
+				Object objectMember = ois.readObject();
+				dto = (paintDTO) objectMember;
+			}
+		}
+	}
+	public void writeData(paintDTO dto) throws IOException {
+		byte[] serializedMember;
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+			try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
+				oos.writeObject(dto);
+				System.out.println("Handler test1111");
+				serializedMember = baos.toByteArray();
+			}
+		}
+		this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
+		this.writer.flush();
+		this.writer.reset();
+	}
 	
 	public String[] makeList(){//string 배열에 roomlist를 토큰으로 쪼개서 저장
 		
@@ -101,21 +129,20 @@ public class myEntry extends JFrame{
 	}
 	
 	public void setRoomIDPWList() {//id pw를 미리 받아와서 세팅
-		paintDTO dto = new paintDTO();
-		dto.setCommand(Info.ROOMLIST);
+		paintDTO _dto = new paintDTO();
+		_dto.setCommand(Info.ROOMLIST);
 		try {
-			writer.writeObject(dto);
-			writer.flush();
-			writer.reset();
+			writeData(_dto);
 		}catch(Exception e1) {
 			e1.printStackTrace();
 		}
 		
 		try {
-			paintDTO checkdto = (paintDTO)reader.readObject();
+			dto = null;
+			readData();
 			
-			Originridlist = checkdto.getRoomList();
-			Originrpwlist = checkdto.getRoomPwList();
+			Originridlist = dto.getRoomList();
+			Originrpwlist = dto.getRoomPwList();
 			
 		}catch(ClassNotFoundException e) {
 			e.printStackTrace();
@@ -337,9 +364,7 @@ public class myEntry extends JFrame{
 
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				writer.writeObject(dto);
-				writer.flush();
-				writer.reset();
+				writeData(dto);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
@@ -353,9 +378,7 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 
 				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -387,9 +410,7 @@ public class myEntry extends JFrame{
 			
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				writer.writeObject(dto);
-				writer.flush();
-				writer.reset();
+				writeData(dto);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
@@ -401,9 +422,7 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 		        
 				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -436,9 +455,7 @@ public class myEntry extends JFrame{
 			
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				writer.writeObject(dto);
-				writer.flush();
-				writer.reset();
+				writeData(dto);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
@@ -450,9 +467,7 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 		        
 				try {
-					writer.writeObject(dto);
-					writer.flush();
-					writer.reset();
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}

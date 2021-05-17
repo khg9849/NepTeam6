@@ -106,7 +106,7 @@ public class myColorPicker extends JFrame{
 		model=chooser.getSelectionModel();
 		model.addChangeListener(chooserListener);
 		this.add(chooser);
-		 this.setVisible( true );
+		// this.setVisible( true );
 	    
 	}
 	public Color getCol() {

@@ -1,8 +1,11 @@
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 
 public class paintHandler extends Thread {
 	private ObjectInputStream reader;
@@ -15,6 +18,7 @@ public class paintHandler extends Thread {
 	
 	private Line line; //핸들러가 받은 brush 리스트
 	private ArrayList<Line> lineList; //line 리스트
+	private paintDTO dto;
 	
 	private String nickname;
 	
@@ -31,13 +35,40 @@ public class paintHandler extends Thread {
 		
 		System.out.println("initialMenu()?");
 	}
+	
+	public void readData() throws IOException, ClassNotFoundException {
+		String base64Member = (String) this.reader.readObject();
+		
+		byte[] serializedMember = Base64.getDecoder().decode(base64Member);
+		try(ByteArrayInputStream bais = new ByteArrayInputStream(serializedMember)){
+			try(ObjectInputStream ois = new ObjectInputStream(bais)){
+				Object objectMember = ois.readObject();
+				dto = (paintDTO) objectMember;
+			}
+		}
+	}
+	public void writeData(paintDTO dto) throws IOException {
+		byte[] serializedMember;
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+			try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
+				oos.writeObject(dto);
+				System.out.println("Handler test1111");
+				serializedMember = baos.toByteArray();
+			}
+		}
+		this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
+		this.writer.flush();
+		this.writer.reset();
+	}
 
 	public void run() {
 		try {
 			while(true) {
 				
 				//클라이언트에서 보낸 dto는 서버 안에 있는 Handler들이 받음
-				paintDTO dto = (paintDTO)reader.readObject();
+				dto = null;
+				readData();
+				
 				boolean cflag = true;
 				if(dto.getCommand()==Info.ROOMLIST) {
 					sendRoomList();
@@ -75,9 +106,7 @@ public class paintHandler extends Thread {
 						sendDTO.setNickname(nickname);
 						sendDTO.setUserCnt(room.getUserCnt());
 						try {
-							writer.writeObject(sendDTO);
-							writer.flush();
-							writer.reset();
+							writeData(sendDTO);
 						}catch(IOException e) {
 							e.printStackTrace();
 						}
@@ -103,9 +132,7 @@ public class paintHandler extends Thread {
 								sendDTO.setUserCnt(r.getUserCnt());
 								broadcast(sendDTO);
 								try {
-									writer.writeObject(sendDTO);
-									writer.flush();
-									writer.reset();
+									writeData(sendDTO);
 								}catch(IOException e) {
 									e.printStackTrace();
 								}
@@ -127,9 +154,7 @@ public class paintHandler extends Thread {
 					paintDTO sendDTO=new paintDTO();
 					sendDTO.setCommand(Info.EXIT2);
 					try {
-						writer.writeObject(sendDTO);
-						writer.flush();
-						writer.reset();
+						writeData(sendDTO);
 					}catch(IOException e) {
 						e.printStackTrace();
 					}
@@ -206,10 +231,7 @@ public class paintHandler extends Thread {
 								paintDTO sendDTO=new paintDTO();
 								sendDTO.setB(b);
 								try {
-									writer.writeObject(sendDTO);
-									sendDTO.getB().print();
-									writer.flush();
-									writer.reset();
+									writeData(sendDTO);
 								}catch(IOException e) {
 									e.printStackTrace();
 								}
@@ -248,8 +270,7 @@ public class paintHandler extends Thread {
 		System.out.println("we will send roomlist: "+roomlist);
 		System.out.println("we will send roompwlist: "+roompwlist);
 		try {
-			this.writer.writeObject(dto);
-			this.writer.flush();
+			this.writeData(dto);
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -261,8 +282,7 @@ public class paintHandler extends Thread {
 		for(paintHandler cho:handlerList) {
 			try {
 				if(cho != this) {
-					cho.writer.writeObject(dto);
-					cho.writer.flush();
+					cho.writeData(dto);
 				}
 				else {
 					continue;

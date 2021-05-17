@@ -26,7 +26,7 @@ enum Info{
 }
 
 public class paintDTO implements Serializable {
-	private static final long serialVersionUID=-1702115601182003730L;
+	private static final long serialVersionUID=21L;
 	
 	private Info command; // DTO type
 	

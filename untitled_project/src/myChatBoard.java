@@ -8,9 +8,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -73,6 +78,20 @@ public class myChatBoard extends JFrame {
 	private JButton userListBttn;
 	private	myUserListFrame userlistFrame;
 	
+	public void writeData(paintDTO dto) throws IOException {
+		byte[] serializedMember;
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+			try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
+				oos.writeObject(dto);
+				System.out.println("Handler test1111");
+				serializedMember = baos.toByteArray();
+			}
+		}
+		this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
+		this.writer.flush();
+		this.writer.reset();
+	}
+	
 	public void sendData() {
 		String data=textField.getText();
 		textArea.append("[Me]: "+data+"\n");
@@ -83,8 +102,7 @@ public class myChatBoard extends JFrame {
 		dto.setCommand(Info.SEND);
 		dto.setMessage(data);
 		try {
-			writer.writeObject(dto);
-			writer.flush();
+			writeData(dto);
 			System.out.println("서버에 전송: "+dto.getCommand());
 			textField.setText("");
 		}catch(Exception e1) {
@@ -147,7 +165,6 @@ public class myChatBoard extends JFrame {
 
 			@Override
 			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 
@@ -160,7 +177,6 @@ public class myChatBoard extends JFrame {
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
         	
@@ -217,7 +233,7 @@ public class myChatBoard extends JFrame {
         
         initChatPanel();
 		this.add(chatPanel);
-		appear();
+		//appear();
 	}
 
 	
