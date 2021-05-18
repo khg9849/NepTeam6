@@ -293,6 +293,11 @@ public class paintClient{
 		for(Layer cho:layerList) {
 			bi.getGraphics().drawImage(cho, 0, 0, 400,400, null);
 		}
+		try {
+			Thread.sleep(1);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		canvas.repaint();
 	}
 	
@@ -388,6 +393,9 @@ public class paintClient{
             	
             	if(jl.isSelectionEmpty() == false) {
 	                //브러시를 화면에 실시간 구현
+            		bb.set_isMouseDrag(true);
+            		bb.setX(bb.getXx());
+            		bb.setY(bb.getYy());
 	            	 bb.setXx(e.getX());
 	                 bb.setYy(e.getY());
 	                 
@@ -408,12 +416,11 @@ public class paintClient{
 	                 //브러시를 dto에 넣어서 보냄
 	                 //필수 항목 4가지
 	                 paintDTO dto=new paintDTO();
-	                 try {
-		                 dto.setCommand(Info.DRAW);
-		                 dto.setL(selected_layerindex);
-		                 dto.setBrushMode(brushMode);
-		                 dto.setB(st.encrypt(bb));
-	                 }catch(Exception e1) {}
+	                 
+					dto.setCommand(Info.DRAW);
+					dto.setL(selected_layerindex);
+					dto.setBrushMode(brushMode);
+					dto.setB(st.encrypt(bb));
 	                 
 					try {
 						writer.writeObject(st.encrypt(dto));
@@ -435,6 +442,7 @@ public class paintClient{
         		
         		if(jl.isSelectionEmpty() == false) {
 	        		//select Layer
+        			bb.set_isMouseDrag(false);
 	        		bb.setXx(e.getX());
 	        		bb.setYy(e.getY());
 	            	bb.setDia(diaCol.getValue());
@@ -573,7 +581,8 @@ public class paintClient{
 							System.out.println("receive EXIT4 from "+dto.getNickname());
 							chatBoard.exit1(dto);
 						}
-						else if (dto.getCommand() == Info.DRAW){
+						else if (dto.getCommand() == Info.DRAW || 
+								dto.getCommand() == Info.LINE_START){
 							//dto.getB().print();
 							
 							//dto에 있는 브러시 객체를 꺼냄
