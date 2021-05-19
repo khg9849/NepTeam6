@@ -27,6 +27,7 @@ import java.util.Base64;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -60,7 +61,7 @@ public class paintClient{
 	//private ObjectInputStream Entryreader;
 	//127.0.0.1
 	//118.91.36.52
-	private final String serverIP="127.0.0.1";
+	private final String serverIP="118.91.36.52";
 	private final int port=9790;
 	private serialTransform st;
 	
@@ -141,19 +142,19 @@ public class paintClient{
     	});
     	showMenu.add(item12);
     	
-    	JMenuItem item2=new JMenuItem("Fetch");
-    	item2.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			paintDTO dto=new paintDTO();
-                dto.setCommand(Info.FETCH);
-				try {
-					writer.writeObject(st.encrypt(dto));
-				}catch(Exception e1) {
-					e1.printStackTrace();
-				}
-    		}
-    	});
-    	tempMenu.add(item2);
+    	//JMenuItem item2=new JMenuItem("Fetch");
+    	//item2.addActionListener(new ActionListener() {
+    	//	public void actionPerformed(ActionEvent e) {
+    	//		paintDTO dto=new paintDTO();
+        //        dto.setCommand(Info.FETCH);
+		//		try {
+		//			writer.writeObject(st.encrypt(dto));
+		//		}catch(Exception e1) {
+		//			e1.printStackTrace();
+		//		}
+    	//	}
+    	//});
+    	//tempMenu.add(item2);
     	
     	JMenuItem item3=new JMenuItem("Save");
     	item3.addActionListener(new ActionListener() {
@@ -192,10 +193,10 @@ public class paintClient{
 
 			public void actionPerformed(ActionEvent e) {
                 paintDTO dto=new paintDTO();
-                addLayer();
+                addLayer(null);
 				dto.setLayerBoolean(true);
 				dto.setCommand(Info.LAYER);
-				System.out.println("layerlist "+ layerList.size());
+				//System.out.println("layerlist "+ layerList.size());
 				
 				try {
 					writer.writeObject(st.encrypt(dto));
@@ -252,7 +253,7 @@ public class paintClient{
 				if (jl.getSelectedIndex() != -1) { 
 					selected_layerindex = jl.getSelectedIndex();
 					g = layerList.get(selected_layerindex).getGraphics();
-					System.out.println("you select number of " + selected_layerindex);
+					//System.out.println("you select number of " + selected_layerindex);
 				}
 			}
 		});
@@ -265,13 +266,20 @@ public class paintClient{
 	}
 
 	//레이어를 추가, 삭제, 권한변경, 우선순위변경, 이름바꾸기
-	public void addLayer() {
-		Layer l = new Layer("init_test" + layerList.size());
-		layerName.insertElementAt("init_test" + layerList.size(), layerList.size());
-		l.setPriority(layerList.size());
-		Graphics2D g2d = (Graphics2D) l.getGraphics();
-		g2d.setComposite(AlphaComposite.Clear);
-		layerList.add(l);
+	public void addLayer(Layer temp) {
+		if(temp == null) {
+			Layer l = new Layer("init_test" + layerList.size());
+			l.setPriority(layerList.size());
+			Graphics2D g2d = (Graphics2D) l.getGraphics();
+			g2d.setComposite(AlphaComposite.Clear);
+			layerName.insertElementAt("init_test" + layerList.size(), layerList.size());
+			layerList.add(l);
+		}
+		else {
+			layerName.insertElementAt("init_test" + layerList.size(), layerList.size());
+			layerList.add(temp);
+			updateCanvas();
+		}
 	}
 	public void delLayer(int index) {
 		layerList.remove(index);
@@ -345,6 +353,16 @@ public class paintClient{
         f.add(rb_erase);
 	}
 	
+	public void initFetch() {
+		paintDTO dto=new paintDTO();
+        dto.setCommand(Info.FETCH);
+		try {
+			writer.writeObject(st.encrypt(dto));
+		}catch(Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
 	public void setCanvas() {
 		f=new JFrame("Canvas");
 		f.setSize(600,500);
@@ -374,6 +392,7 @@ public class paintClient{
         initLayer();
         initCanvas();
         initRadioButton();
+        initFetch();
         
         // color picker
         colorPicker=new myColorPicker(Color.BLACK);
@@ -550,7 +569,34 @@ public class paintClient{
 							int deleteLayerIndex = dto.getL();
 							
 							if(isAddLayer == true) {
-								addLayer();
+								//if(dto.getl() == null)
+								int LayerSize = dto.getLsize();
+								if(LayerSize == -1)
+									addLayer(null);
+								else {
+									ArrayList<BufferedImage> temp1 = new ArrayList<BufferedImage>();
+									for(int i = 0; i < LayerSize; i++) {
+										BufferedImage ol = ImageIO.read(reader);
+										temp1.add(ol);
+									}
+									for(int i = 0; i < LayerSize; i++) {
+										//BufferedImage ol = temp1.get(i);
+										String tt = (String)reader.readObject();
+										
+										BufferedImage _l = st.decrypt_layer(tt);
+										Layer l = new Layer("test");
+										Graphics2D g2d = (Graphics2D) l.getGraphics();
+										g2d.setComposite(AlphaComposite.Clear);
+										Graphics __g = l.getGraphics();
+										__g.drawImage(_l, 0, 0, 400, 400, null);
+										l.setPriority(i);
+										
+
+										addLayer(l);
+									}
+								}
+								//else
+								//	addLayer((Layer)st.decrypt(dto.getl()));
 							}
 							else if(isAddLayer == false){
 								delLayer(deleteLayerIndex);
@@ -612,6 +658,24 @@ public class paintClient{
 							recvbb.paint(recvG);
 						    updateCanvas();
 						    
+						}
+						else if (dto.getCommand() == Info.FETCH) {
+							//뉴비가 FETCH를 보내면 handlerList의 index 0에게 FETCH dto를 보낸다
+							//이 때, 해당 dto를 받은 클라(index 0의 클라)는 자신이 가지고 있던 Layer들을 뉴비에게 보낸다.
+
+							paintDTO sendDTO = new paintDTO();
+							sendDTO.setCommand(Info.FETCH2);
+							sendDTO.setLsize(layerList.size());
+							try {
+								writer.writeObject(st.encrypt(sendDTO));
+							}catch(Exception e1) {
+								e1.printStackTrace();
+							}
+							
+							for(Layer l:layerList) {
+								writer.writeObject(st.encrypt_layer((BufferedImage)l));
+							}
+							
 						}
 					}catch(IOException e) {
 						e.printStackTrace();
