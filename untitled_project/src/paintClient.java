@@ -533,7 +533,7 @@ public class paintClient{
 				while(isThread) {
 					try {
 						//dto ¹ÞÀ½
-						st = new serialTransform();
+						
 						String base64Member = (String) reader.readObject();
 						paintDTO dto = (paintDTO) st.decrypt(base64Member);
 						
@@ -646,23 +646,40 @@ public class paintClient{
 			socket=new Socket(serverIP,port);
 			writer=new ObjectOutputStream(socket.getOutputStream());
 			reader=new ObjectInputStream(socket.getInputStream());
+			st = new serialTransform();
 			//Entryreader=new ObjectInputStream(socket.getInputStream());
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
-		entry=new myEntry(writer, reader);
+		entry=new myEntry(writer, reader, socket);
 		
-		while(!entry.currentStat()) {
+		while(entry.currentStat() == 0) {
 			System.out.print("");
 		}
-		nickname=entry.getNickname();
-		roomID=entry.getRoomID();
-		userCnt=entry.getUserCnt();
-		
-		setCanvas();
-		
-		recvData();
-		
+		System.out.println("currentStat is "+entry.currentStat());
+		if(entry.currentStat() == 1) { 
+			nickname=entry.getNickname();
+			roomID=entry.getRoomID();
+			userCnt=entry.getUserCnt();
+			
+			setCanvas();
+			
+			recvData();
+		}
+		else if(entry.currentStat()==2) {
+			paintDTO dto=new paintDTO();
+			dto.setCommand(Info.EXIT5);
+			System.out.println("send EXIT5");
+			try {
+				writer.writeObject(st.encrypt(dto));
+			}catch(Exception e1) {
+				e1.printStackTrace();
+			}
+			while(socket.isClosed()) {
+				break;
+			}
+			
+		}
 	}
 	public static void main(String[] args) {
 		new paintClient();

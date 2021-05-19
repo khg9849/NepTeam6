@@ -29,7 +29,7 @@ enum Info{
 	ROOMLIST,
 	
 	//종료 //EXIT은 이제 필요없다 나중에 지우자
-	EXIT1, EXIT2, EXIT3, EXIT4
+	EXIT1, EXIT2, EXIT3, EXIT4, EXIT5, EXIT6
 }
 
 public class paintDTO implements Serializable {
