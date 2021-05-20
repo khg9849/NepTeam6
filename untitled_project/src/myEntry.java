@@ -24,6 +24,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -72,7 +73,9 @@ public class myEntry extends JFrame{
 	JLabel nicknameLabel = new JLabel("닉네임");
 	JLabel ErrorMsg = new JLabel();
 	JTextField RID = new JTextField();
-	JTextField RPW = new JTextField();
+	JPasswordField RPW = new JPasswordField();
+	
+	
 	JTextField Nname = new JTextField();
 	
 	private String Originridlist;//초기 방 id정보
@@ -333,9 +336,14 @@ public class myEntry extends JFrame{
 	class createClick implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-		
+			char[] secret_pw = RPW.getPassword();
+			roomPW = "";
+			for(char c: secret_pw) {
+				Character.toString(c);
+				roomPW+= (roomPW.equals("")) ? "" + c + "" : "" + c + "";
+			}
+			//roomPW=RPW.getText();
 			roomID=RID.getText();
-			roomPW=RPW.getText();
 			nickname=Nname.getText();
 
 			paintDTO dto=new paintDTO();
@@ -378,9 +386,14 @@ public class myEntry extends JFrame{
 	class QjoinClick implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			
+			char[] secret_pw = RPW.getPassword();
+			roomPW = "";
+			for(char c: secret_pw) {
+				Character.toString(c);
+				roomPW+= (roomPW.equals("")) ? "" + c + "" : "" + c + "";
+			}
 			roomID=QjoinID;
-			roomPW=RPW.getText();
+			//roomPW=RPW.getText();
 			nickname=Nname.getText();
 			
 			paintDTO dto=new paintDTO();
@@ -424,8 +437,14 @@ public class myEntry extends JFrame{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			
+			char[] secret_pw = RPW.getPassword();
+			roomPW = "";
+			for(char c: secret_pw) {
+				Character.toString(c);
+				roomPW+= (roomPW.equals("")) ? "" + c + "" : "" + c + "";
+			}
 			roomID=RID.getText();
-			roomPW=RPW.getText();
+			//roomPW=RPW.getText();
 			nickname=Nname.getText();
 			
 			paintDTO dto=new paintDTO();
@@ -512,7 +531,7 @@ public class myEntry extends JFrame{
 		this.writer=writer;
 		this.reader=reader;
 		st = new serialTransform();
-	
+		RPW.setEchoChar('*');
 		this.setTitle("Open Canvas");
 		this.setSize(600,500);
 	    this.setLayout(new FlowLayout());
