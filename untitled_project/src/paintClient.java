@@ -209,19 +209,18 @@ public class paintClient{
 		jb_delLayer.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				if(jl.isSelectionEmpty() == false) {
-					paintDTO dto=new paintDTO();
-	                delLayer(selected_layerindex);
-					dto.setCommand(Info.LAYER);
-					dto.setLayerBoolean(false);
-					dto.setL(selected_layerindex);
-					System.out.println("layerlist "+ layerList.size());
-	                 
-					try {
-						writer.writeObject(st.encrypt(dto));
-					}catch(Exception e1) {
-						e1.printStackTrace();
-					}
+				
+				paintDTO dto=new paintDTO();
+                delLayer(selected_layerindex);
+				dto.setCommand(Info.LAYER);
+				dto.setLayerBoolean(false);
+				dto.setL(selected_layerindex);
+				System.out.println("layerlist "+ layerList.size());
+                 
+				try {
+					writer.writeObject(st.encrypt(dto));
+				}catch(Exception e1) {
+					e1.printStackTrace();
 				}
 			}
 			
@@ -385,42 +384,40 @@ public class paintClient{
         canvas.addMouseMotionListener( new MouseMotionListener() {
             
             public void mouseDragged(MouseEvent e) {
-            	
-            	if(jl.isSelectionEmpty() == false) {
-	                //브러시를 화면에 실시간 구현
-	            	 bb.setXx(e.getX());
-	                 bb.setYy(e.getY());
-	                 
-	                 if(brushMode == BrushMode.DRAW) {
-	                	Graphics2D g2d = (Graphics2D) g;
-	          			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
-	          			g2d.setComposite(ac);             	 
-	                 }
-	                 else if(brushMode == BrushMode.ERASE) {
-	         			Graphics2D g2d = (Graphics2D) g;
-	         			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.DST_OUT);
-	         			g2d.setComposite(ac);
-	                 }
-	
-	      			 bb.paint(g);
-	                 updateCanvas();
-	                 
-	                 //브러시를 dto에 넣어서 보냄
-	                 //필수 항목 4가지
-	                 paintDTO dto=new paintDTO();
-	                 try {
-		                 dto.setCommand(Info.DRAW);
-		                 dto.setL(selected_layerindex);
-		                 dto.setBrushMode(brushMode);
-		                 dto.setB(st.encrypt(bb));
-	                 }catch(Exception e1) {}
-	                 
-					try {
-						writer.writeObject(st.encrypt(dto));
-					}catch(Exception e1) {
-						e1.printStackTrace();
-					}
-            	}
+            	            	
+                //브러시를 화면에 실시간 구현
+            	 bb.setXx(e.getX());
+                 bb.setYy(e.getY());
+                 
+                 if(brushMode == BrushMode.DRAW) {
+                	Graphics2D g2d = (Graphics2D) g;
+          			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
+          			g2d.setComposite(ac);             	 
+                 }
+                 else if(brushMode == BrushMode.ERASE) {
+         			Graphics2D g2d = (Graphics2D) g;
+         			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.DST_OUT);
+         			g2d.setComposite(ac);
+                 }
+
+      			 bb.paint(g);
+                 updateCanvas();
+                 
+                 //브러시를 dto에 넣어서 보냄
+                 //필수 항목 4가지
+                 paintDTO dto=new paintDTO();
+                 try {
+	                 dto.setCommand(Info.DRAW);
+	                 dto.setL(selected_layerindex);
+	                 dto.setBrushMode(brushMode);
+	                 dto.setB(st.encrypt(bb));
+                 }catch(Exception e1) {}
+                 
+				try {
+					writer.writeObject(st.encrypt(dto));
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
             }
             
             public void mouseMoved(MouseEvent e) {
@@ -433,54 +430,50 @@ public class paintClient{
         	
         	public void mousePressed(MouseEvent e) {
         		
-        		if(jl.isSelectionEmpty() == false) {
-	        		//select Layer
-	        		bb.setXx(e.getX());
-	        		bb.setYy(e.getY());
-	            	bb.setDia(diaCol.getValue());
-	    			bb.setCol(colorPicker.getCol());
-	        		
-	        		//set color
-	        		if(brushMode == BrushMode.DRAW) {
-	        			Graphics2D g2d = (Graphics2D) g;
-	          			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
-	          			g2d.setComposite(ac);
-	        		}
-	        		else if(brushMode == BrushMode.ERASE) {
-	        			Graphics2D g2d = (Graphics2D) g;
-	        			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.DST_OUT);
-	        			g2d.setComposite(ac);
-	        		}
-	        		bb.paint(g);
-	    			updateCanvas();
-	
-	            	// 새로운 line이 입력된다는 info 전송
-	        		//필수 항목 4가지
-	                paintDTO dto=new paintDTO();
-		            dto.setCommand(Info.LINE_START);
-		            dto.setB(st.encrypt(bb));
-		            dto.setL(selected_layerindex);
-		            dto.setBrushMode(brushMode);
-	                
-					try {
-						writer.writeObject(st.encrypt(dto));
-					}catch(Exception e1) {
-						e1.printStackTrace();
-					}
+        		//select Layer
+        		bb.setXx(e.getX());
+        		bb.setYy(e.getY());
+            	bb.setDia(diaCol.getValue());
+    			bb.setCol(colorPicker.getCol());
+        		
+        		//set color
+        		if(brushMode == BrushMode.DRAW) {
+        			Graphics2D g2d = (Graphics2D) g;
+          			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
+          			g2d.setComposite(ac);
         		}
+        		else if(brushMode == BrushMode.ERASE) {
+        			Graphics2D g2d = (Graphics2D) g;
+        			AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.DST_OUT);
+        			g2d.setComposite(ac);
+        		}
+        		bb.paint(g);
+    			updateCanvas();
+
+            	// 새로운 line이 입력된다는 info 전송
+        		//필수 항목 4가지
+                paintDTO dto=new paintDTO();
+	            dto.setCommand(Info.LINE_START);
+	            dto.setB(st.encrypt(bb));
+	            dto.setL(selected_layerindex);
+	            dto.setBrushMode(brushMode);
+                
+				try {
+					writer.writeObject(st.encrypt(dto));
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
             	
         	}
         	// 새로운 line 입력이 완료되었다는 info 전송
         	public void mouseReleased(MouseEvent e) {
-        		if(jl.isSelectionEmpty() == false) {
-	        		paintDTO dto=new paintDTO();
-	                dto.setCommand(Info.LINE_FINISH);
-					try {
-						writer.writeObject(st.encrypt(dto));
-					}catch(Exception e1) {
-						e1.printStackTrace();
-					}
-        		}
+        		paintDTO dto=new paintDTO();
+                dto.setCommand(Info.LINE_FINISH);
+				try {
+					writer.writeObject(st.encrypt(dto));
+				}catch(Exception e1) {
+					e1.printStackTrace();
+				}
         	}
 
         });
