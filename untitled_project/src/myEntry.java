@@ -41,7 +41,6 @@ public class myEntry extends JFrame{
 	private JButton createBttn;
 	private JButton joinBttn;
 	private JButton QuickjoinBttn;
-	private JList roomJList;
 	
 	//private Room room;
 	private String roomID;
@@ -146,7 +145,6 @@ public class myEntry extends JFrame{
 			}
 			System.out.println(count);
 		}
-		
 		if(strkRoom.countTokens() == 0) { // 남은 토큰이 하나도 없으면 리스트에 방이름이 없다는걸 의미합니다
 			//System.out.println("no room");
 			JoinError = "존재하지 않는 방입니다.";
@@ -473,13 +471,7 @@ public class myEntry extends JFrame{
 	class joinBttnClicked implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			if(Originridlist.length() == 2) {
-				JoinError = "생성된 방이 없습니다.";
-				System.out.println(Originridlist);
-				JoinError();
-			}
-			else
-				getInfoJoin("");
+			getInfoJoin("");
 			
 		}
 	}
@@ -487,13 +479,7 @@ public class myEntry extends JFrame{
 	class QjoinBttnClicked implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			if(roomJList.isSelectionEmpty()) {
-				JoinError = "방을 선택해 주세요";
-				System.out.println(Originridlist);
-				JoinError();
-			}
-			else if(QjoinID != null && !QjoinID.equals("") && !QjoinID.equals("\n"))
-				getInfoQJoin(QjoinID);
+			getInfoQJoin(QjoinID);
 			
 		}
 	}
@@ -525,7 +511,7 @@ public class myEntry extends JFrame{
 	    setRoomIDPWList();
 	    roomList = makeList();
 	    
-	    roomJList = new JList(roomList);
+	    JList roomJList = new JList(roomList);
 	    roomJList.setBounds(142,100,300,200);
 	    createBttn=new JButton("create");
 	    joinBttn=new JButton("join");
