@@ -18,7 +18,7 @@ public class paintHandler extends Thread {
 	
 	private Line line; //핸들러가 받은 brush 리스트
 	private ArrayList<Line> lineList; //line 리스트
-	private paintDTO dto;
+	private serialTransform st;
 	
 	private String nickname;
 	
@@ -35,39 +35,16 @@ public class paintHandler extends Thread {
 		
 		System.out.println("initialMenu()?");
 	}
-	
-	public void readData() throws IOException, ClassNotFoundException {
-		String base64Member = (String) this.reader.readObject();
-		
-		byte[] serializedMember = Base64.getDecoder().decode(base64Member);
-		try(ByteArrayInputStream bais = new ByteArrayInputStream(serializedMember)){
-			try(ObjectInputStream ois = new ObjectInputStream(bais)){
-				Object objectMember = ois.readObject();
-				dto = (paintDTO) objectMember;
-			}
-		}
-	}
-	public void writeData(paintDTO dto) throws IOException {
-		byte[] serializedMember;
-		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
-			try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
-				oos.writeObject(dto);
-				System.out.println("Handler test1111");
-				serializedMember = baos.toByteArray();
-			}
-		}
-		this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
-		this.writer.flush();
-		this.writer.reset();
-	}
 
 	public void run() {
 		try {
 			while(true) {
 				
 				//클라이언트에서 보낸 dto는 서버 안에 있는 Handler들이 받음
-				dto = null;
-				readData();
+				st = new serialTransform();
+				String base64Member = (String) this.reader.readObject();
+				paintDTO dto = (paintDTO) st.decrypt(base64Member);
+				//readData();
 				
 				boolean cflag = true;
 				if(dto.getCommand()==Info.ROOMLIST) {
@@ -106,7 +83,7 @@ public class paintHandler extends Thread {
 						sendDTO.setNickname(nickname);
 						sendDTO.setUserCnt(room.getUserCnt());
 						try {
-							writeData(sendDTO);
+							writer.writeObject(st.encrypt(sendDTO));
 						}catch(IOException e) {
 							e.printStackTrace();
 						}
@@ -132,7 +109,7 @@ public class paintHandler extends Thread {
 								sendDTO.setUserCnt(r.getUserCnt());
 								broadcast(sendDTO);
 								try {
-									writeData(sendDTO);
+									writer.writeObject(st.encrypt(sendDTO));
 								}catch(IOException e) {
 									e.printStackTrace();
 								}
@@ -154,7 +131,7 @@ public class paintHandler extends Thread {
 					paintDTO sendDTO=new paintDTO();
 					sendDTO.setCommand(Info.EXIT2);
 					try {
-						writeData(sendDTO);
+						writer.writeObject(st.encrypt(sendDTO));
 					}catch(IOException e) {
 						e.printStackTrace();
 					}
@@ -210,12 +187,13 @@ public class paintHandler extends Thread {
 					//클라이언트에서 받은 dto를 소켓에 연결된 모든 클라이언트들에게 보냄
 					broadcast(dto);
 					
-					line.add(dto.getB()); // line에 brush 추가
+					line.add((Brush)st.decrypt(dto.getB())); // line에 brush 추가
 				}
 				else if(dto.getCommand()==Info.LINE_START) {
 					line=new Line(); // line 입력 시작
 					broadcast(dto);
-					line.add(dto.getB());
+					
+					line.add((Brush)st.decrypt(dto.getB()));
 				}
 				else if(dto.getCommand()==Info.LINE_FINISH) {
 					lineList.add(line); // line 입력 종료 -> lineList에 추가
@@ -229,9 +207,9 @@ public class paintHandler extends Thread {
 						for(Line line:cho.lineList) {
 							for(Brush b:line) {
 								paintDTO sendDTO=new paintDTO();
-								sendDTO.setB(b);
+								sendDTO.setB(st.encrypt(b));
 								try {
-									writeData(sendDTO);
+									writer.writeObject(st.encrypt(sendDTO));
 								}catch(IOException e) {
 									e.printStackTrace();
 								}
@@ -270,7 +248,7 @@ public class paintHandler extends Thread {
 		System.out.println("we will send roomlist: "+roomlist);
 		System.out.println("we will send roompwlist: "+roompwlist);
 		try {
-			this.writeData(dto);
+			this.writer.writeObject(st.encrypt(dto));
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -282,7 +260,7 @@ public class paintHandler extends Thread {
 		for(paintHandler cho:handlerList) {
 			try {
 				if(cho != this) {
-					cho.writeData(dto);
+					cho.writer.writeObject(cho.st.encrypt(dto));
 				}
 				else {
 					continue;

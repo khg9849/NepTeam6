@@ -49,7 +49,7 @@ public class myEntry extends JFrame{
 	private String QjoinID = "";
 	private boolean Cstat = false;
 	private int userCnt;
-	private paintDTO dto;
+	private serialTransform st;
 	
 	private String[] roomList;
 	private String CreateError = new String("이미 존재하는 방입니다.");
@@ -83,31 +83,6 @@ public class myEntry extends JFrame{
 	public String getNickname() {
 		return nickname;
 	}
-
-	public void readData() throws IOException, ClassNotFoundException {
-		String base64Member = (String) this.reader.readObject();
-		
-		byte[] serializedMember = Base64.getDecoder().decode(base64Member);
-		try(ByteArrayInputStream bais = new ByteArrayInputStream(serializedMember)){
-			try(ObjectInputStream ois = new ObjectInputStream(bais)){
-				Object objectMember = ois.readObject();
-				dto = (paintDTO) objectMember;
-			}
-		}
-	}
-	public void writeData(paintDTO dto) throws IOException {
-		byte[] serializedMember;
-		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
-			try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
-				oos.writeObject(dto);
-				System.out.println("Handler test1111");
-				serializedMember = baos.toByteArray();
-			}
-		}
-		this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
-		this.writer.flush();
-		this.writer.reset();
-	}
 	
 	public String[] makeList(){//string 배열에 roomlist를 토큰으로 쪼개서 저장
 		
@@ -132,14 +107,14 @@ public class myEntry extends JFrame{
 		paintDTO _dto = new paintDTO();
 		_dto.setCommand(Info.ROOMLIST);
 		try {
-			writeData(_dto);
+			writer.writeObject(st.encrypt(_dto));
 		}catch(Exception e1) {
 			e1.printStackTrace();
 		}
 		
 		try {
-			dto = null;
-			readData();
+			String recvDTO = (String) this.reader.readObject();
+			paintDTO dto = (paintDTO) st.decrypt(recvDTO);
 			
 			Originridlist = dto.getRoomList();
 			Originrpwlist = dto.getRoomPwList();
@@ -364,7 +339,7 @@ public class myEntry extends JFrame{
 
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				writeData(dto);
+				writer.writeObject(st.encrypt(dto));
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
@@ -378,7 +353,7 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 
 				try {
-					writeData(dto);
+					writer.writeObject(st.encrypt(dto));
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -410,7 +385,7 @@ public class myEntry extends JFrame{
 			
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				writeData(dto);
+				writer.writeObject(st.encrypt(dto));
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
@@ -422,7 +397,7 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 		        
 				try {
-					writeData(dto);
+					writer.writeObject(st.encrypt(dto));
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -455,7 +430,7 @@ public class myEntry extends JFrame{
 			
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				writeData(dto);
+				writer.writeObject(st.encrypt(dto));
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
@@ -467,7 +442,7 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 		        
 				try {
-					writeData(dto);
+					writer.writeObject(st.encrypt(dto));
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -521,6 +496,7 @@ public class myEntry extends JFrame{
 		
 		this.writer=writer;
 		this.reader=reader;
+		st = new serialTransform();
 	
 		this.setTitle("Open Canvas");
 		this.setSize(600,500);
