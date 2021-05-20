@@ -34,11 +34,10 @@ import java.util.StringTokenizer;
 
 
 public class myEntry extends JFrame{
+	//private Socket socket;
 	
-	private Socket socket;
 	private ObjectOutputStream writer;
 	private ObjectInputStream reader;
-	
 	private JButton createBttn;
 	private JButton joinBttn;
 	private JButton QuickjoinBttn;
@@ -49,7 +48,7 @@ public class myEntry extends JFrame{
 	private String roomPW;
 	private String nickname;
 	private String QjoinID = "";
-	private int Cstat = 0;
+	private boolean Cstat = false;
 	private int userCnt;
 	private serialTransform st;
 	
@@ -180,7 +179,7 @@ public class myEntry extends JFrame{
 		return false;
 		
 	}
-	public int currentStat() {
+	public boolean currentStat() {
 		return this.Cstat;
 	}
 	public void CreateError() {
@@ -360,7 +359,7 @@ public class myEntry extends JFrame{
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
-				Cstat = 1;
+				Cstat = true;
 
 				CMenu.dispose();
 				dispose();
@@ -404,7 +403,7 @@ public class myEntry extends JFrame{
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
-				Cstat = 1;
+				Cstat = true;
 				QJMenu.dispose();
 				dispose();
 			}
@@ -449,7 +448,7 @@ public class myEntry extends JFrame{
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
-				Cstat = 1;
+				Cstat = true;
 				JMenu.dispose();
 				dispose();
 			}
@@ -506,9 +505,9 @@ public class myEntry extends JFrame{
 		this.setVisible(true);
 	}
 	
-	public myEntry(ObjectOutputStream writer, ObjectInputStream reader, Socket socket) {
+	public myEntry(ObjectOutputStream writer, ObjectInputStream reader) {
 
-		this.socket=socket;
+		
 		this.writer=writer;
 		this.reader=reader;
 		st = new serialTransform();
@@ -520,9 +519,6 @@ public class myEntry extends JFrame{
 	    this.addWindowListener(new WindowAdapter() {
         	public void windowClosing(WindowEvent e) {
     			disappear();
-    			Cstat = 2;
-    			System.exit(EXIT_ON_CLOSE);
- //   			exit(1);
         	}
         });
 	    

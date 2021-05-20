@@ -50,17 +50,7 @@ public class paintHandler extends Thread {
 				if(dto.getCommand()==Info.ROOMLIST) {
 					sendRoomList();
 				}
-				else if(dto.getCommand()==Info.EXIT5) {
-					try {
-						reader.close();
-						writer.close();
-						socket.close();
-					}
-					catch(IOException e) {
-						e.printStackTrace();
-					}
-					break;
-				}
+				
 				else if(dto.getCommand()==Info.CREATE) {
 					String roomID=dto.getRoomID();
 					String roomPW=dto.getRoomPW();
@@ -166,7 +156,6 @@ public class paintHandler extends Thread {
 				else if(dto.getCommand()==Info.EXIT) {
 					
 					handlerList.remove(this);
-				
 					System.out.println("exit client");
 					
 					reader.close();
