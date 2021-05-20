@@ -1,11 +1,9 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import java.io.Serializable;
 
 import javax.swing.JLabel;
 
-public class Brush  extends JLabel implements Serializable{
-	private static final long serialVersionUID=22L;
+public class Brush  extends JLabel{
 	private int xx,yy;
 	private Color col;
 	private int dia;

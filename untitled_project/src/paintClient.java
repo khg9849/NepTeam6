@@ -60,9 +60,9 @@ public class paintClient{
 	//private ObjectInputStream Entryreader;
 	//127.0.0.1
 	//118.91.36.52
-	private final String serverIP="127.0.0.1";
+	private final String serverIP="118.91.36.52";
 	private final int port=9790;
-	private serialTransform st;
+	private paintDTO dto;
 	
 	//Client 고유 번호
 	private int ClientUID;
@@ -108,6 +108,31 @@ public class paintClient{
 	JList<String> jl;
 	private int addLayer_initcount = 0;
 	private int selected_layerindex = 0;
+		
+	public void readData() throws IOException, ClassNotFoundException {
+		String base64Member = (String) this.reader.readObject();
+		
+		byte[] serializedMember = Base64.getDecoder().decode(base64Member);
+		try(ByteArrayInputStream bais = new ByteArrayInputStream(serializedMember)){
+			try(ObjectInputStream ois = new ObjectInputStream(bais)){
+				Object objectMember = ois.readObject();
+				dto = (paintDTO) objectMember;
+			}
+		}
+	}
+	public void writeData(paintDTO dto) throws IOException {
+		byte[] serializedMember;
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+			try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
+				oos.writeObject(dto);
+				System.out.println("Handler test1111");
+				serializedMember = baos.toByteArray();
+			}
+		}
+		this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
+		this.writer.flush();
+		this.writer.reset();
+	}
 	
 	public void initSlider() {
 		diaCol = new JSlider(JSlider.HORIZONTAL, 1, 100, 20);
@@ -147,7 +172,7 @@ public class paintClient{
     			paintDTO dto=new paintDTO();
                 dto.setCommand(Info.FETCH);
 				try {
-					writer.writeObject(st.encrypt(dto));
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -198,7 +223,7 @@ public class paintClient{
 				System.out.println("layerlist "+ layerList.size());
 				
 				try {
-					writer.writeObject(st.encrypt(dto));
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -218,7 +243,7 @@ public class paintClient{
 				System.out.println("layerlist "+ layerList.size());
                  
 				try {
-					writer.writeObject(st.encrypt(dto));
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -351,7 +376,7 @@ public class paintClient{
     			dto.setNickname(nickname);
     			dto.setCommand(Info.EXIT1);
     			try {
-    				writer.writeObject(st.encrypt(dto));
+					writeData(dto);
     				System.out.println("서버에 EXIT1 전송");
     			}catch(Exception e1) {
     				e1.printStackTrace();
@@ -406,15 +431,13 @@ public class paintClient{
                  //브러시를 dto에 넣어서 보냄
                  //필수 항목 4가지
                  paintDTO dto=new paintDTO();
-                 try {
-	                 dto.setCommand(Info.DRAW);
-	                 dto.setL(selected_layerindex);
-	                 dto.setBrushMode(brushMode);
-	                 dto.setB(st.encrypt(bb));
-                 }catch(Exception e1) {}
+                 dto.setCommand(Info.DRAW);
+                 dto.setB(bb);
+                 dto.setL(selected_layerindex);
+                 dto.setBrushMode(brushMode);
                  
 				try {
-					writer.writeObject(st.encrypt(dto));
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -453,13 +476,13 @@ public class paintClient{
             	// 새로운 line이 입력된다는 info 전송
         		//필수 항목 4가지
                 paintDTO dto=new paintDTO();
-	            dto.setCommand(Info.LINE_START);
-	            dto.setB(st.encrypt(bb));
-	            dto.setL(selected_layerindex);
-	            dto.setBrushMode(brushMode);
+                dto.setCommand(Info.LINE_START);
+                dto.setB(bb);
+                dto.setL(selected_layerindex);
+                dto.setBrushMode(brushMode);
                 
 				try {
-					writer.writeObject(st.encrypt(dto));
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -470,7 +493,7 @@ public class paintClient{
         		paintDTO dto=new paintDTO();
                 dto.setCommand(Info.LINE_FINISH);
 				try {
-					writer.writeObject(st.encrypt(dto));
+					writeData(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -518,9 +541,8 @@ public class paintClient{
 				while(isThread) {
 					try {
 						//dto 받음
-						st = new serialTransform();
-						String base64Member = (String) reader.readObject();
-						paintDTO dto = (paintDTO) st.decrypt(base64Member);
+						dto = null;
+						readData();
 						
 						if(dto.getCommand()==Info.ROOMLIST) {
 							System.out.println("we got roomLIST!");
@@ -554,7 +576,7 @@ public class paintClient{
 							sendDTO.setCommand(Info.EXIT3);
 							sendDTO.setNickname(nickname);
 							try {
-								writer.writeObject(st.encrypt(sendDTO));
+								writeData(sendDTO);
 							}catch(IOException e) {
 								e.printStackTrace();
 							}
@@ -574,7 +596,7 @@ public class paintClient{
 							//1. 브러시 정보 = Brush
 							//2. 선택된 레이어 층수 = int
 							//3. 브러시의 모드 = BrushMode
-							Brush recvbb= (Brush) st.decrypt(dto.getB()); //recvbb = [B@3e2f815f
+							Brush recvbb=dto.getB();
 							int recvLayerPriority = dto.getL();
 							BrushMode recvBrushMode = dto.getBrushMode();
 							recvbb.setBounds(20,20,400,400);
@@ -643,7 +665,10 @@ public class paintClient{
 		roomID=entry.getRoomID();
 		userCnt=entry.getUserCnt();
 		
+		System.out.println("test1234");
 		setCanvas();
+		
+		System.out.println("setting is done");
 		
 		recvData();
 		

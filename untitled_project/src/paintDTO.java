@@ -1,14 +1,7 @@
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Base64;
 
 import javax.swing.JLabel;
 
@@ -37,7 +30,7 @@ public class paintDTO implements Serializable {
 	
 	private Info command; // DTO type
 	
-	private String b;
+	private Brush b;
 	private BrushMode brushMode;
 	private boolean isAddLayer;
 	private int selectedLayerIndex;
@@ -51,9 +44,6 @@ public class paintDTO implements Serializable {
 	
 	private String roomList;
 	private String roompwList;
-	
-	//Brush 클래스를 직렬화 및 역직렬화
-	
 	public String getRoomID() {
 		return roomID;
 	}
@@ -69,16 +59,19 @@ public class paintDTO implements Serializable {
 	public void setRoomPW(String roomPW) {
 		this.roomPW = roomPW;
 	}
+
+
 	
 	paintDTO(){
 		command=Info.DRAW;
 	}
 	
-	public String getB(){
+
+	public Brush getB() {
 		return b;
 	}
 
-	public void setB(String b) {
+	public void setB(Brush b) {
 		this.b = b;
 	}
 	
