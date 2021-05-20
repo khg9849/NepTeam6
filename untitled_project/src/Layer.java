@@ -1,9 +1,7 @@
 import java.awt.image.BufferedImage;
-import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Layer extends BufferedImage implements Serializable{
-	private static final long serialVersionUID=23L;
+public class Layer extends BufferedImage{
 	private String name;
 	private int priority;
 	

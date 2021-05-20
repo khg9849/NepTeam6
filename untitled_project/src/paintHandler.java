@@ -1,4 +1,3 @@
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -7,8 +6,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Base64;
-
-import javax.imageio.ImageIO;
 
 public class paintHandler extends Thread {
 	private ObjectInputStream reader;
@@ -201,13 +198,13 @@ public class paintHandler extends Thread {
 					//클라이언트에서 받은 dto를 소켓에 연결된 모든 클라이언트들에게 보냄
 					broadcast(dto);
 					
-					//line.add(dto); // line에 brush 추가
+					line.add((Brush)st.decrypt(dto.getB())); // line에 brush 추가
 				}
 				else if(dto.getCommand()==Info.LINE_START) {
-					//line=new Line(); // line 입력 시작
+					line=new Line(); // line 입력 시작
 					broadcast(dto);
 					
-					//line.add(dto);
+					line.add((Brush)st.decrypt(dto.getB()));
 				}
 				else if(dto.getCommand()==Info.LINE_FINISH) {
 					lineList.add(line); // line 입력 종료 -> lineList에 추가
@@ -216,41 +213,24 @@ public class paintHandler extends Thread {
 				// FETCH를 요청받으면 다른 핸들러가 가지고 있는 lineList를 참조해서
 				// 요청한 클라이언트에 전송
 				else if(dto.getCommand()==Info.FETCH) {
-					paintHandler temp = handlerList.get(0);
-					if(temp != this) {
-						//room에 있는 paintHandler의 배열에서 index==0에게 FETCH발송
-						paintDTO sendDTO = new paintDTO();
-						sendDTO.setCommand(Info.FETCH);
-						try {
-							temp.writer.writeObject(st.encrypt(sendDTO));
-						}catch(IOException e) {
-							e.printStackTrace();
+					for(paintHandler cho:handlerList) {
+						if(cho==this) continue;
+						for(Line line:cho.lineList) {
+							for(Brush b:line) {
+								paintDTO sendDTO=new paintDTO();
+								sendDTO.setB(st.encrypt(b));
+								try {
+									writer.writeObject(st.encrypt(sendDTO));
+								}catch(IOException e) {
+									e.printStackTrace();
+								}
+							}
 						}
 					}
 					
 				}
-				else if (dto.getCommand() == Info.FETCH2) {
-					//index 0의 핸들러는 해당 클라가 가지고 있는 레이어 정보를 통째로 받음
-					paintHandler newbie = handlerList.get(handlerList.size() -1);
-					
-					paintDTO layerDTO = new paintDTO();
-					layerDTO.setLayerBoolean(true);
-					layerDTO.setLsize(dto.getLsize());
-					layerDTO.setCommand(Info.LAYER);
-					try {
-						newbie.writer.writeObject(st.encrypt(layerDTO));
-					}catch(IOException e){
-						e.printStackTrace();
-					}
-
-					for(int i = 0; i < dto.getLsize(); i++) {
-						String tt = (String)reader.readObject();
-						newbie.writer.writeObject(tt);
-					}
-				}
 				else if(dto.getCommand() == Info.LAYER) {
 					broadcast(dto);
-					//line.add(dto);
 				}
 			}
 		}catch(IOException e) {

@@ -21,7 +21,7 @@ enum Info{
 	JOIN,SEND,
 	
 	//참여 및 종료
-	EXIT, FETCH, FETCH2,
+	EXIT, FETCH,
 	
 	//ROOM
 	CREATE,ENTER,
@@ -41,8 +41,6 @@ public class paintDTO implements Serializable {
 	private BrushMode brushMode;
 	private boolean isAddLayer;
 	private int selectedLayerIndex;
-
-	private int layerListSize = -1; //fetch할때 사용될 Layer의 개수
 	
 	private String message;
 	private String nickname;
@@ -106,14 +104,6 @@ public class paintDTO implements Serializable {
 	
 	public void setL(int index) {
 		selectedLayerIndex = index;
-	}
-	
-	public int getLsize() {
-		return layerListSize;
-	}
-	
-	public void setLsize(int l) {
-		this.layerListSize = l;
 	}
 
 	public Info getCommand() {
