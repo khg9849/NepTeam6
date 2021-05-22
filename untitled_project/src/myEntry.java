@@ -109,7 +109,7 @@ public class myEntry extends JFrame{
 	}
 	
 	public void setRoomIDPWList() {//id pw를 미리 받아와서 세팅
-		paintDTO _dto = new paintDTO();
+		DTO _dto = new DTO();
 		_dto.setCommand(Info.ROOMLIST);
 		try {
 			writer.writeObject(st.encrypt(_dto));
@@ -119,7 +119,7 @@ public class myEntry extends JFrame{
 		
 		try {
 			String recvDTO = (String) this.reader.readObject();
-			paintDTO dto = (paintDTO) st.decrypt(recvDTO);
+			DTO dto = (DTO) st.decrypt(recvDTO);
 			
 			Originridlist = dto.getRoomList();
 			Originrpwlist = dto.getRoomPwList();
@@ -346,7 +346,7 @@ public class myEntry extends JFrame{
 			roomID=RID.getText();
 			nickname=Nname.getText();
 
-			paintDTO dto=new paintDTO();
+			DTO dto=new DTO();
 
 			dto.setCommand(Info.ROOMLIST);
 			try {
@@ -396,7 +396,7 @@ public class myEntry extends JFrame{
 			//roomPW=RPW.getText();
 			nickname=Nname.getText();
 			
-			paintDTO dto=new paintDTO();
+			DTO dto=new DTO();
 			
 			
 			dto.setCommand(Info.ROOMLIST);
@@ -447,7 +447,7 @@ public class myEntry extends JFrame{
 			//roomPW=RPW.getText();
 			nickname=Nname.getText();
 			
-			paintDTO dto=new paintDTO();
+			DTO dto=new DTO();
 			
 			
 			dto.setCommand(Info.ROOMLIST);

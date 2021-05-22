@@ -61,7 +61,7 @@ public class paintClient{
 	//private ObjectInputStream Entryreader;
 	//127.0.0.1
 	//118.91.36.52
-	private final String serverIP="118.91.36.52";
+	private final String serverIP="127.0.0.1";
 	private final int port=9790;
 	private serialTransform st;
 	
@@ -192,7 +192,7 @@ public class paintClient{
 		jb_addLayer.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-                paintDTO dto=new paintDTO();
+                DTO dto=new DTO();
                 addLayer(null);
 				dto.setLayerBoolean(true);
 				dto.setCommand(Info.LAYER);
@@ -211,7 +211,7 @@ public class paintClient{
 
 			public void actionPerformed(ActionEvent e) {
 				if(jl.isSelectionEmpty() == false) {
-					paintDTO dto=new paintDTO();
+					DTO dto=new DTO();
 	                delLayer(selected_layerindex);
 					dto.setCommand(Info.LAYER);
 					dto.setLayerBoolean(false);
@@ -354,7 +354,7 @@ public class paintClient{
 	}
 	
 	public void initFetch() {
-		paintDTO dto=new paintDTO();
+		DTO dto=new DTO();
         dto.setCommand(Info.FETCH);
 		try {
 			writer.writeObject(st.encrypt(dto));
@@ -371,7 +371,7 @@ public class paintClient{
         f.addWindowListener(new WindowAdapter() {
         	public void windowClosing(WindowEvent e) {
         		//EXIT(1): canvas에서 창을 끄면 핸들러에 EXIT1 전송
-    			paintDTO dto=new paintDTO();
+    			DTO dto=new DTO();
     			dto.setNickname(nickname);
     			dto.setCommand(Info.EXIT1);
     			try {
@@ -434,7 +434,7 @@ public class paintClient{
 	                 
 	                 //브러시를 dto에 넣어서 보냄
 	                 //필수 항목 4가지
-	                 paintDTO dto=new paintDTO();
+	                 DTO dto=new DTO();
 	                 
 					dto.setCommand(Info.DRAW);
 					dto.setL(selected_layerindex);
@@ -483,7 +483,7 @@ public class paintClient{
 	
 	            	// 새로운 line이 입력된다는 info 전송
 	        		//필수 항목 4가지
-	                paintDTO dto=new paintDTO();
+	                DTO dto=new DTO();
 		            dto.setCommand(Info.LINE_START);
 		            dto.setB(st.encrypt(bb));
 		            dto.setL(selected_layerindex);
@@ -500,7 +500,7 @@ public class paintClient{
         	// 새로운 line 입력이 완료되었다는 info 전송
         	public void mouseReleased(MouseEvent e) {
         		if(jl.isSelectionEmpty() == false) {
-	        		paintDTO dto=new paintDTO();
+	        		DTO dto=new DTO();
 	                dto.setCommand(Info.LINE_FINISH);
 					try {
 						writer.writeObject(st.encrypt(dto));
@@ -554,7 +554,7 @@ public class paintClient{
 						//dto 받음
 						
 						String base64Member = (String) reader.readObject();
-						paintDTO dto = (paintDTO) st.decrypt(base64Member);
+						DTO dto = (DTO) st.decrypt(base64Member);
 						
 						if(dto.getCommand()==Info.ROOMLIST) {
 							System.out.println("we got roomLIST!");
@@ -605,26 +605,28 @@ public class paintClient{
 						else if(dto.getCommand()==Info.CREATE) {
 							chatBoard.create(dto);
 						}
-						else if(dto.getCommand()==Info.JOIN) {
+						else if(dto.getCommand()==Info.ENTER) {
 							chatBoard.enter(dto);
 						}
-						//EXIT(3): 클라이언트에게서 EXIT2을 받으면 EXIT3 재전송하고 스레드 종료 
-						else if (dto.getCommand() == Info.EXIT2) {
-							System.out.println("receive EXIT2 from handler");
-							paintDTO sendDTO=new paintDTO();
-							sendDTO.setCommand(Info.EXIT3);
+						//EXIT(3): 클라이언트에게서 EXIT1을 받으면 EXIT2 재전송하고 스레드 종료 
+						else if (dto.getCommand() == Info.EXIT1) {
+							System.out.println("receive EXIT1 from handler");
+							DTO sendDTO=new DTO();
+							sendDTO.setCommand(Info.EXIT2);
 							sendDTO.setNickname(nickname);
 							try {
 								writer.writeObject(st.encrypt(sendDTO));
 							}catch(IOException e) {
 								e.printStackTrace();
 							}
-							System.out.println("send EXIT3 to server");
+							System.out.println("send EXIT2 to server");
+							chatBoard.subUserCnt();
+							
 							break;
 						}
 						// EXIT(5): 전송받은 EXIT4를 통해 어떤 클라이언트가 접속을 종료했는지 파악
-						else if (dto.getCommand() == Info.EXIT4) {
-							System.out.println("receive EXIT4 from "+dto.getNickname());
+						else if (dto.getCommand() == Info.EXIT3) {
+							System.out.println("receive EXIT3 from "+dto.getNickname());
 							chatBoard.exit1(dto);
 						}
 						else if (dto.getCommand() == Info.DRAW || 
@@ -663,7 +665,7 @@ public class paintClient{
 							//뉴비가 FETCH를 보내면 handlerList의 index 0에게 FETCH dto를 보낸다
 							//이 때, 해당 dto를 받은 클라(index 0의 클라)는 자신이 가지고 있던 Layer들을 뉴비에게 보낸다.
 
-							paintDTO sendDTO = new paintDTO();
+							DTO sendDTO = new DTO();
 							sendDTO.setCommand(Info.FETCH2);
 							sendDTO.setLsize(layerList.size());
 							try {
@@ -684,14 +686,14 @@ public class paintClient{
 					}
 				}
 				System.exit(0);
-				/*
+				
 				try {
 					reader.close();
 					writer.close();
 					socket.close();
 				}catch(Exception e1) {
 					e1.printStackTrace();
-				}*/
+				}
 				
 			}
 			
@@ -701,9 +703,7 @@ public class paintClient{
 	}
 	
 
-	/*
-	
-	 */
+
 	public paintClient() {
 		
 		try {
@@ -720,7 +720,7 @@ public class paintClient{
 		while(entry.currentStat() == 0) {
 			System.out.print("");
 		}
-		System.out.println("currentStat is "+entry.currentStat());
+		//System.out.println("currentStat is "+entry.currentStat());
 		if(entry.currentStat() == 1) { 
 			nickname=entry.getNickname();
 			roomID=entry.getRoomID();
@@ -731,9 +731,9 @@ public class paintClient{
 			recvData();
 		}
 		else if(entry.currentStat()==2) {
-			paintDTO dto=new paintDTO();
-			dto.setCommand(Info.EXIT5);
-			System.out.println("send EXIT5");
+			DTO dto=new DTO();
+			dto.setCommand(Info.EXIT3);
+			System.out.println("send EXIT3");
 			try {
 				writer.writeObject(st.encrypt(dto));
 			}catch(Exception e1) {
@@ -742,7 +742,13 @@ public class paintClient{
 			while(socket.isClosed()) {
 				break;
 			}
-			
+			try {
+				reader.close();
+				writer.close();
+				socket.close();
+			}catch(Exception e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 	public static void main(String[] args) {
