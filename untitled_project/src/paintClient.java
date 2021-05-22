@@ -268,15 +268,15 @@ public class paintClient{
 	//레이어를 추가, 삭제, 권한변경, 우선순위변경, 이름바꾸기
 	public void addLayer(Layer temp) {
 		if(temp == null) {
-			Layer l = new Layer("init_test" + layerList.size());
+			Layer l = new Layer("layer" + layerList.size());
 			l.setPriority(layerList.size());
 			Graphics2D g2d = (Graphics2D) l.getGraphics();
 			g2d.setComposite(AlphaComposite.Clear);
-			layerName.insertElementAt("init_test" + layerList.size(), layerList.size());
+			layerName.insertElementAt("layer" + layerList.size(), layerList.size());
 			layerList.add(l);
 		}
 		else {
-			layerName.insertElementAt("init_test" + layerList.size(), layerList.size());
+			layerName.insertElementAt("layer" + layerList.size(), layerList.size());
 			layerList.add(temp);
 			updateCanvas();
 		}
