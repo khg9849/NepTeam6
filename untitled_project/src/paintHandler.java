@@ -46,24 +46,14 @@ public class paintHandler extends Thread {
 				//클라이언트에서 보낸 dto는 서버 안에 있는 Handler들이 받음
 				st = new serialTransform();
 				String base64Member = (String) this.reader.readObject();
-				paintDTO dto = (paintDTO) st.decrypt(base64Member);
+				DTO dto = (DTO) st.decrypt(base64Member);
 				//readData();
 				
 				boolean cflag = true;
 				if(dto.getCommand()==Info.ROOMLIST) {
 					sendRoomList();
 				}
-				else if(dto.getCommand()==Info.EXIT5) {
-					try {
-						reader.close();
-						writer.close();
-						socket.close();
-					}
-					catch(IOException e) {
-						e.printStackTrace();
-					}
-					break;
-				}
+				
 				else if(dto.getCommand()==Info.CREATE) {
 					String roomID=dto.getRoomID();
 					String roomPW=dto.getRoomPW();
@@ -72,7 +62,6 @@ public class paintHandler extends Thread {
 					for(Room r:roomList) {
 						System.out.println("for\n");
 						// 1. 중복됨 => 메시지 띄우기
-						// (지금은 중복 무조건 안된다고 가정)
 						if(r.getRoomID().equals(roomID)) {
 							System.out.println("중복된다~!");
 							cflag = false;
@@ -86,11 +75,11 @@ public class paintHandler extends Thread {
 						handlerList=new ArrayList<paintHandler>();
 						room=new Room(roomID,roomPW,handlerList);
 						roomList.add(room);
-						System.out.println("room "+roomID+" is created");
+						System.out.println("room ["+roomID+"] is created");
 						
 						room.enter(this);
-						System.out.println(nickname+" is entered "+roomID);
-						paintDTO sendDTO=new paintDTO();
+						System.out.println(nickname+" entered "+roomID);
+						DTO sendDTO=new DTO();
 						sendDTO.setCommand(Info.CREATE);
 						sendDTO.setRoomID(roomID);
 						sendDTO.setNickname(nickname);
@@ -112,12 +101,13 @@ public class paintHandler extends Thread {
 					for(Room r:roomList) {
 						// 1. 방 찾음
 						if(r.getRoomID().equals(roomID)) {
-								System.out.println("room "+roomID+" is found");
-								r.enter(this);
-								handlerList=r.getHandlerList();
-								System.out.println(nickname+" is entered "+roomID);
-								paintDTO sendDTO=new paintDTO();
-								sendDTO.setCommand(Info.JOIN);
+								System.out.println("room ["+roomID+"] is found");
+								this.room=r;
+								room.enter(this);
+								handlerList=room.getHandlerList();
+								System.out.println(nickname+" entered "+roomID);
+								DTO sendDTO=new DTO();
+								sendDTO.setCommand(Info.ENTER);
 								sendDTO.setNickname(nickname);
 								sendDTO.setUserCnt(r.getUserCnt());
 								broadcast(sendDTO);
@@ -138,60 +128,55 @@ public class paintHandler extends Thread {
 //						System.out.println("방 없다~!");
 //					}
 				}
-				//EXIT(2): 클라이언트에게서 EXIT1을 받으면 다시 EXIT2 전송
+				//EXIT(1): 클라이언트에게서 EXIT1을 받으면 다시 EXIT1 전송
 				else if(dto.getCommand()==Info.EXIT1) {
 					System.out.println("receive EXIT1 from "+dto.getNickname());
-					paintDTO sendDTO=new paintDTO();
-					sendDTO.setCommand(Info.EXIT2);
+					DTO sendDTO=new DTO();
+					sendDTO.setCommand(Info.EXIT1);
 					try {
 						writer.writeObject(st.encrypt(sendDTO));
 					}catch(IOException e) {
 						e.printStackTrace();
 					}
-					System.out.println("send EXIT2 to "+dto.getNickname());
+					System.out.println("send EXIT1 to "+dto.getNickname());
 				}
-				//EXIT(4): 클라이언트에게서 EXIT3을 받으면 소켓 종료, handlerList에서 삭제
-				// 			해당 클라이언트가 방을 나갔다는 정보 EXIT4에 담아 broadcast
-				else if(dto.getCommand()==Info.EXIT3) {
-					System.out.println("receive EXIT3 from "+dto.getNickname());
+				//EXIT(2): 클라이언트에게서 EXIT2을 받으면 소켓 종료, handlerList에서 삭제
+				// 			해당 클라이언트가 방을 나갔다는 정보 EXIT3에 담아 broadcast
+				else if(dto.getCommand()==Info.EXIT2) {
+					System.out.println("receive EXIT2 from "+dto.getNickname());
 					reader.close();
 					writer.close();
 					socket.close();
+					room.exit1();
 					handlerList.remove(this);
 					
-					paintDTO sendDTO=new paintDTO();
-					sendDTO.setCommand(Info.EXIT4);
+					DTO sendDTO=new DTO();
+					sendDTO.setCommand(Info.EXIT3);
 					sendDTO.setNickname(nickname);
 					broadcast(sendDTO);
-					System.out.println("broadcast EXIT4");
+					System.out.println("broadcast EXIT3");
 					break;
 				}
-				else if(dto.getCommand()==Info.EXIT) {
-					
-					handlerList.remove(this);
-				
-					System.out.println("exit client");
-					
-					reader.close();
-					writer.close();
-					socket.close();
-					
-					paintDTO sendDTO=new paintDTO();
-					sendDTO.setCommand(Info.SEND);
-					sendDTO.setMessage(dto.getNickname()+"님 퇴장하셨습니다");
-					broadcast(sendDTO);
-					
+				else if(dto.getCommand()==Info.EXIT3) {
+					try {
+						reader.close();
+						writer.close();
+						socket.close();
+					}
+					catch(IOException e) {
+						e.printStackTrace();
+					}
 					break;
 				}
-				else if(dto.getCommand()==Info.JOIN) {
-					paintDTO sendDTO=new paintDTO();
+				else if(dto.getCommand()==Info.ENTER) {
+					DTO sendDTO=new DTO();
 					nickname=dto.getNickname();
 					sendDTO.setCommand(Info.SEND);
-					sendDTO.setMessage("["+nickname+"] is entered");
+					sendDTO.setMessage("["+nickname+"]  entered");
 					broadcast(sendDTO);
 				}
 				else if(dto.getCommand()==Info.SEND) {
-					paintDTO sendDTO=new paintDTO();
+					DTO sendDTO=new DTO();
 					sendDTO.setCommand(Info.SEND);
 					sendDTO.setMessage("["+dto.getNickname()+"]: "+dto.getMessage());
 					broadcast(sendDTO);
@@ -219,7 +204,7 @@ public class paintHandler extends Thread {
 					paintHandler temp = handlerList.get(0);
 					if(temp != this) {
 						//room에 있는 paintHandler의 배열에서 index==0에게 FETCH발송
-						paintDTO sendDTO = new paintDTO();
+						DTO sendDTO = new DTO();
 						sendDTO.setCommand(Info.FETCH);
 						try {
 							temp.writer.writeObject(st.encrypt(sendDTO));
@@ -233,7 +218,7 @@ public class paintHandler extends Thread {
 					//index 0의 핸들러는 해당 클라가 가지고 있는 레이어 정보를 통째로 받음
 					paintHandler newbie = handlerList.get(handlerList.size() -1);
 					
-					paintDTO layerDTO = new paintDTO();
+					DTO layerDTO = new DTO();
 					layerDTO.setLayerBoolean(true);
 					layerDTO.setLsize(dto.getLsize());
 					layerDTO.setCommand(Info.LAYER);
@@ -272,7 +257,7 @@ public class paintHandler extends Thread {
 		}
 		roomlist+="\n";
 		roompwlist+="\n";
-		paintDTO dto=new paintDTO();
+		DTO dto=new DTO();
 		dto.setCommand(Info.ROOMLIST);
 		dto.setRoomList(roomlist);
 		dto.setRoomPwList(roompwlist);
@@ -285,9 +270,9 @@ public class paintHandler extends Thread {
 		}
 	}
 
-	private void broadcast(paintDTO dto) {
+	private void broadcast(DTO dto) {
 		if(handlerList.isEmpty()) return;
-		System.out.println("handlerList is not empty. so server can broadcast");
+		//System.out.println("handlerList is not empty. so server can broadcast");
 		for(paintHandler cho:handlerList) {
 			try {
 				if(cho != this) {
