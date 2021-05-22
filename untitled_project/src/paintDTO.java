@@ -18,7 +18,7 @@ enum Info{
 	LAYER,
 	
 	//채팅
-	SEND,
+	JOIN,SEND,
 	
 	//참여 및 종료
 	EXIT, FETCH, FETCH2,
@@ -28,11 +28,11 @@ enum Info{
 	
 	ROOMLIST,
 	
-	//종료
-	EXIT1, EXIT2, EXIT3
+	//종료 //EXIT은 이제 필요없다 나중에 지우자
+	EXIT1, EXIT2, EXIT3, EXIT4, EXIT5, EXIT6
 }
 
-public class DTO implements Serializable {
+public class paintDTO implements Serializable {
 	private static final long serialVersionUID=21L;
 	
 	private Info command; // DTO type
@@ -72,7 +72,7 @@ public class DTO implements Serializable {
 		this.roomPW = roomPW;
 	}
 	
-	DTO(){
+	paintDTO(){
 		command=Info.DRAW;
 	}
 	

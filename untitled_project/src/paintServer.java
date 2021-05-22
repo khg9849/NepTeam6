@@ -16,11 +16,11 @@ public class paintServer{
 		
 		   try {
 	            serverSocket = new ServerSocket(port);
-	            System.out.println("["+port+"] server is ready to get client");
+	            System.out.println("["+port+"] server is made");
 	            roomList = new ArrayList<Room>();
 	            while (true) {
 	                Socket socket = serverSocket.accept();
-	                System.out.println("connection is made");
+	                System.out.println("get client");
 	                
 	                paintHandler handler = new paintHandler(socket, roomList);
 	                handler.start();

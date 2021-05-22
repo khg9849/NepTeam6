@@ -24,13 +24,51 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+class myUserListFrame extends JFrame{
+	private JTextArea userListArea;
+	//private ArrayList<String> userList;
+	
+	myUserListFrame(ArrayList<String> userList){
+		this.setTitle("user list");
+		this.setSize(100,200);
+		//this.userList=userList;
+		// 위치 설정
 
+        this.setLayout(null);
+        this.addWindowListener(new WindowAdapter() {
+        	public void windowClosing(WindowEvent e) {
+    			setVisible(false);
+        	}
+        });
+        
+        userListArea=new JTextArea();
+        userListArea.setBounds(10,10,80,180);
+        userListArea.setEditable(false); 
+        update();
+        this.add(userListArea);
+        setVisible(false);
+        
+	}
+	public void update() {
+		userListArea.setText("null");
+		//room 인스턴스 전송 안되면 이 기능은 버립시다
+		/*
+		userListArea.setText("");
+		
+		for(String user:userList) {
+			userListArea.append(user+"\n");
+		}
+		*/
+	}
+
+}
 public class myChatBoard extends JFrame {
-
+	private Socket socket;
 	private ObjectOutputStream writer;
 	private String nickname;
 	private String roomID;
 	private int userCnt;
+	private ArrayList<String> userList;
 	
 	private JPanel chatPanel;
 	private JTextField textField;
@@ -38,8 +76,9 @@ public class myChatBoard extends JFrame {
 	private JScrollPane scrollPane;
 	private JTextArea textArea;
 	private JButton userListBttn;
+	private	myUserListFrame userlistFrame;
 	
-	public void writeData(DTO dto) throws IOException {
+	public void writeData(paintDTO dto) throws IOException {
 		byte[] serializedMember;
 		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
 			try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
@@ -58,7 +97,7 @@ public class myChatBoard extends JFrame {
 		textArea.append("[Me]: "+data+"\n");
 		scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
 		
-		DTO dto=new DTO();
+		paintDTO dto=new paintDTO();
 		dto.setNickname(nickname);
 		dto.setCommand(Info.SEND);
 		dto.setMessage(data);
@@ -71,35 +110,33 @@ public class myChatBoard extends JFrame {
 		}
 	}
 	
-	public void readData(DTO dto) {
+	public void readData(paintDTO dto) {
 		System.out.println("서버에서 받았습니다: "+dto.getCommand());
 		textArea.append(dto.getMessage()+"\n");
 		scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
 		System.out.println(dto.getMessage()+"\n");
 	}	
 	
-	public void create(DTO dto) {
+	public void create(paintDTO dto) {
 		userListBttn.setText(roomID);
 		textArea.append("[System]: "+dto.getRoomID()+" is created\n");
 		scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
 		enter(dto);
 	}
-	public void enter(DTO dto) {
+	public void enter(paintDTO dto) {
 		userCnt=dto.getUserCnt();
 		userListBttn.setText(roomID+"("+userCnt+")");
-		textArea.append("[System]: "+dto.getNickname()+" entered\n");
+		userList.add(dto.getNickname());
+		textArea.append("[System]: "+dto.getNickname()+" is entered\n");
 		System.out.println("userCnt is "+userCnt);
 		scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
 	}
 	
-	public void exit1(DTO dto) {
-		textArea.append("[System]: "+dto.getNickname()+" exited\n");
-		userListBttn.setText(roomID+"("+userCnt+")");
-		scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
-	}
-	public void subUserCnt() {
+	public void exit1(paintDTO dto) {
+		textArea.append("[System]: "+dto.getNickname()+" is exited\n");
 		userCnt--;
 		userListBttn.setText(roomID+"("+userCnt+")");
+		scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
 	}
 	
 	public void initChatPanel() {
@@ -151,7 +188,14 @@ public class myChatBoard extends JFrame {
 				sendData();
 			}
 		});
+        userListBttn.addActionListener(new ActionListener() {
 
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				userlistFrame.update();
+				userlistFrame.setVisible(true);
+			}
+		});
 	}
 	
 	public void disappear() {
@@ -184,6 +228,8 @@ public class myChatBoard extends JFrame {
         	}
         });
         
+        userList=new ArrayList<String>();
+        this.userlistFrame=new myUserListFrame(userList);
         
         initChatPanel();
 		this.add(chatPanel);

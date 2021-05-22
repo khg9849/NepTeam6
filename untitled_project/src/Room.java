@@ -31,9 +31,6 @@ public class Room {
 		setUserCnt(getUserCnt()+1);
 		handlerList.add(handler);
 	}
-	public void exit1() {
-		setUserCnt(getUserCnt()-1);
-	}
 	
 	public void setnickName(String nickName) {
 		this.nickName = nickName;
