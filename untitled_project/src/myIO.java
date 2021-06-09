@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.util.Base64;
 
 public class myIO {
@@ -31,7 +32,7 @@ public class myIO {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		
 		
-		int len = reader.readInt();
+		int len = dis.readInt();
 		int returnLength = len;
 		reciveData = new byte[len];
 		int r;
@@ -43,13 +44,8 @@ public class myIO {
 		    }
 		}
 		buffer.flush();
-		//reader.read(buffer, 0, len);
 		String base64Member = buffer.toString();
-
-		//System.out.println("myRead len : " + len);
-		//System.out.println("myRead base64Member : " + base64Member);
 		
-		//String base64Member = (String) reader.readObject();
 		temp = (DTO) st.decrypt(base64Member);
 		
 		return temp;
@@ -61,19 +57,12 @@ public class myIO {
 		String base64Member = st.encrypt(dto);
 		int len = base64Member.length();
 		
-		//String base64Member = Base64.getEncoder().encodeToString(buffer);
-		
-		//System.out.println("myWrite len : " + len);
-		//System.out.println("myWrite buffer : " + buffer);
-		//System.out.println("myWrite base64Member : " + base64Member);
 		
 		byte[] buffer = base64Member.getBytes();
 		
-		writer.writeInt(len);
-		//writer.writeObject(base64Member);
+		dos.writeInt(len);
 		dos.write(buffer);
 		dos.flush();
-		//writer.writeObject(base64Member);
 	}
 
 }
