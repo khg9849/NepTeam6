@@ -14,6 +14,7 @@ public class paintHandler extends Thread {
 	private ObjectInputStream reader;
 	private ObjectOutputStream writer;
 	private Socket socket;
+	private myIO mio;
 	
 	private ArrayList<Room> roomList;
 	private Room room;
@@ -45,8 +46,10 @@ public class paintHandler extends Thread {
 				
 				//클라이언트에서 보낸 dto는 서버 안에 있는 Handler들이 받음
 				st = new serialTransform();
-				String base64Member = (String) this.reader.readObject();
-				DTO dto = (DTO) st.decrypt(base64Member);
+				mio = new myIO(writer, reader);
+				
+				//String base64Member = (String) this.reader.readObject();
+				DTO dto = mio.myRead();
 				//readData();
 				
 				boolean cflag = true;
@@ -85,7 +88,8 @@ public class paintHandler extends Thread {
 						sendDTO.setNickname(nickname);
 						sendDTO.setUserCnt(room.getUserCnt());
 						try {
-							writer.writeObject(st.encrypt(sendDTO));
+							//writer.writeObject(st.encrypt(sendDTO));
+							mio.myWrite(sendDTO);
 						}catch(IOException e) {
 							e.printStackTrace();
 						}
@@ -112,7 +116,8 @@ public class paintHandler extends Thread {
 								sendDTO.setUserCnt(r.getUserCnt());
 								broadcast(sendDTO);
 								try {
-									writer.writeObject(st.encrypt(sendDTO));
+									//writer.writeObject(st.encrypt(sendDTO));
+									mio.myWrite(sendDTO);
 								}catch(IOException e) {
 									e.printStackTrace();
 								}
@@ -134,7 +139,8 @@ public class paintHandler extends Thread {
 					DTO sendDTO=new DTO();
 					sendDTO.setCommand(Info.EXIT1);
 					try {
-						writer.writeObject(st.encrypt(sendDTO));
+						//writer.writeObject(st.encrypt(sendDTO));
+						mio.myWrite(sendDTO);
 					}catch(IOException e) {
 						e.printStackTrace();
 					}
@@ -207,7 +213,8 @@ public class paintHandler extends Thread {
 						DTO sendDTO = new DTO();
 						sendDTO.setCommand(Info.FETCH);
 						try {
-							temp.writer.writeObject(st.encrypt(sendDTO));
+							//temp.writer.writeObject(st.encrypt(sendDTO));
+							temp.mio.myWrite(sendDTO);
 						}catch(IOException e) {
 							e.printStackTrace();
 						}
@@ -223,12 +230,15 @@ public class paintHandler extends Thread {
 					layerDTO.setLsize(dto.getLsize());
 					layerDTO.setCommand(Info.LAYER);
 					try {
-						newbie.writer.writeObject(st.encrypt(layerDTO));
+						//newbie.writer.writeObject(st.encrypt(layerDTO));
+						newbie.mio.myWrite(layerDTO);
 					}catch(IOException e){
 						e.printStackTrace();
 					}
 
 					for(int i = 0; i < dto.getLsize(); i++) {
+						//DTO tt = mio.myRead();
+						//newbie.mio.myWrite(tt);
 						String tt = (String)reader.readObject();
 						newbie.writer.writeObject(tt);
 					}
@@ -264,7 +274,8 @@ public class paintHandler extends Thread {
 		System.out.println("we will send roomlist: "+roomlist);
 		System.out.println("we will send roompwlist: "+roompwlist);
 		try {
-			this.writer.writeObject(st.encrypt(dto));
+			//this.writer.writeObject(st.encrypt(dto));
+			mio.myWrite(dto);
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -276,7 +287,8 @@ public class paintHandler extends Thread {
 		for(paintHandler cho:handlerList) {
 			try {
 				if(cho != this) {
-					cho.writer.writeObject(cho.st.encrypt(dto));
+					//cho.writer.writeObject(cho.st.encrypt(dto));
+					cho.mio.myWrite(dto);
 				}
 				else {
 					continue;

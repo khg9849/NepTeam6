@@ -64,6 +64,7 @@ public class paintClient{
 	private final String serverIP="127.0.0.1";
 	private final int port=9790;
 	private serialTransform st;
+	private myIO mio;
 	
 	//Client 고유 번호
 	private int ClientUID;
@@ -199,7 +200,8 @@ public class paintClient{
 				//System.out.println("layerlist "+ layerList.size());
 				
 				try {
-					writer.writeObject(st.encrypt(dto));
+					//writer.writeObject(st.encrypt(dto));
+					mio.myWrite(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -219,7 +221,8 @@ public class paintClient{
 					System.out.println("layerlist "+ layerList.size());
 	                 
 					try {
-						writer.writeObject(st.encrypt(dto));
+						//writer.writeObject(st.encrypt(dto));
+						mio.myWrite(dto);
 					}catch(Exception e1) {
 						e1.printStackTrace();
 					}
@@ -357,7 +360,8 @@ public class paintClient{
 		DTO dto=new DTO();
         dto.setCommand(Info.FETCH);
 		try {
-			writer.writeObject(st.encrypt(dto));
+			//writer.writeObject(st.encrypt(dto));
+			mio.myWrite(dto);
 		}catch(Exception e1) {
 			e1.printStackTrace();
 		}
@@ -375,7 +379,8 @@ public class paintClient{
     			dto.setNickname(nickname);
     			dto.setCommand(Info.EXIT1);
     			try {
-    				writer.writeObject(st.encrypt(dto));
+    				//writer.writeObject(st.encrypt(dto));
+    				mio.myWrite(dto);
     				System.out.println("서버에 EXIT1 전송");
     			}catch(Exception e1) {
     				e1.printStackTrace();
@@ -442,7 +447,8 @@ public class paintClient{
 					dto.setB(st.encrypt(bb));
 	                 
 					try {
-						writer.writeObject(st.encrypt(dto));
+						//writer.writeObject(st.encrypt(dto));
+						mio.myWrite(dto);
 					}catch(Exception e1) {
 						e1.printStackTrace();
 					}
@@ -490,7 +496,8 @@ public class paintClient{
 		            dto.setBrushMode(brushMode);
 	                
 					try {
-						writer.writeObject(st.encrypt(dto));
+						//writer.writeObject(st.encrypt(dto));
+						mio.myWrite(dto);
 					}catch(Exception e1) {
 						e1.printStackTrace();
 					}
@@ -503,7 +510,8 @@ public class paintClient{
 	        		DTO dto=new DTO();
 	                dto.setCommand(Info.LINE_FINISH);
 					try {
-						writer.writeObject(st.encrypt(dto));
+						//writer.writeObject(st.encrypt(dto));
+						mio.myWrite(dto);
 					}catch(Exception e1) {
 						e1.printStackTrace();
 					}
@@ -552,9 +560,9 @@ public class paintClient{
 				while(isThread) {
 					try {
 						//dto 받음
+						//DTO dto = (DTO) st.decrypt(base64Member);
 						
-						String base64Member = (String) reader.readObject();
-						DTO dto = (DTO) st.decrypt(base64Member);
+						DTO dto = mio.myRead();						
 						
 						if(dto.getCommand()==Info.ROOMLIST) {
 							System.out.println("we got roomLIST!");
@@ -615,7 +623,8 @@ public class paintClient{
 							sendDTO.setCommand(Info.EXIT2);
 							sendDTO.setNickname(nickname);
 							try {
-								writer.writeObject(st.encrypt(sendDTO));
+								//writer.writeObject(st.encrypt(sendDTO));
+								mio.myWrite(sendDTO);
 							}catch(IOException e) {
 								e.printStackTrace();
 							}
@@ -668,7 +677,8 @@ public class paintClient{
 							sendDTO.setCommand(Info.FETCH2);
 							sendDTO.setLsize(layerList.size());
 							try {
-								writer.writeObject(st.encrypt(sendDTO));
+								//writer.writeObject(st.encrypt(sendDTO));
+								mio.myWrite(sendDTO);
 							}catch(Exception e1) {
 								e1.printStackTrace();
 							}
@@ -712,6 +722,8 @@ public class paintClient{
 			writer=new ObjectOutputStream(socket.getOutputStream());
 			reader=new ObjectInputStream(socket.getInputStream());
 			st = new serialTransform();
+			mio = new myIO(writer, reader);
+			
 			//Entryreader=new ObjectInputStream(socket.getInputStream());
 		}catch(IOException e) {
 			e.printStackTrace();

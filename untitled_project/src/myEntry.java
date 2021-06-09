@@ -39,6 +39,7 @@ public class myEntry extends JFrame{
 	private Socket socket;
 	private ObjectOutputStream writer;
 	private ObjectInputStream reader;
+	private myIO mio;
 	
 	private JButton createBttn;
 	private JButton joinBttn;
@@ -112,22 +113,28 @@ public class myEntry extends JFrame{
 		DTO _dto = new DTO();
 		_dto.setCommand(Info.ROOMLIST);
 		try {
-			writer.writeObject(st.encrypt(_dto));
+			//writer.writeObject(st.encrypt(_dto));
+			mio.myWrite(_dto);
 		}catch(Exception e1) {
 			e1.printStackTrace();
 		}
 		
 		try {
-			String recvDTO = (String) this.reader.readObject();
-			DTO dto = (DTO) st.decrypt(recvDTO);
+			//String recvDTO = (String) this.reader.readObject();
+			//DTO dto = (DTO) st.decrypt(recvDTO);
+			DTO dto = mio.myRead();
+			
 			
 			Originridlist = dto.getRoomList();
 			Originrpwlist = dto.getRoomPwList();
 			
-		}catch(ClassNotFoundException e) {
+		}/*catch(ClassNotFoundException e) {
 			e.printStackTrace();
-		}catch(IOException e1) {
+		}*/catch(IOException e1) {
 			e1.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
@@ -350,7 +357,8 @@ public class myEntry extends JFrame{
 
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				writer.writeObject(st.encrypt(dto));
+				//writer.writeObject(st.encrypt(dto));
+				mio.myWrite(dto);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
@@ -364,7 +372,8 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 
 				try {
-					writer.writeObject(st.encrypt(dto));
+					//writer.writeObject(st.encrypt(dto));
+					mio.myWrite(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -401,7 +410,8 @@ public class myEntry extends JFrame{
 			
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				writer.writeObject(st.encrypt(dto));
+				//writer.writeObject(st.encrypt(dto));
+				mio.myWrite(dto);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
@@ -413,7 +423,8 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 		        
 				try {
-					writer.writeObject(st.encrypt(dto));
+					//writer.writeObject(st.encrypt(dto));
+					mio.myWrite(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -452,7 +463,8 @@ public class myEntry extends JFrame{
 			
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				writer.writeObject(st.encrypt(dto));
+				//writer.writeObject(st.encrypt(dto));
+				mio.myWrite(dto);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
@@ -464,7 +476,8 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 		        
 				try {
-					writer.writeObject(st.encrypt(dto));
+					//writer.writeObject(st.encrypt(dto));
+					mio.myWrite(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
 				}
@@ -531,6 +544,8 @@ public class myEntry extends JFrame{
 		this.writer=writer;
 		this.reader=reader;
 		st = new serialTransform();
+		mio = new myIO(this.writer, this.reader);
+		
 		RPW.setEchoChar('*');
 		this.setTitle("Open Canvas");
 		this.setSize(600,500);

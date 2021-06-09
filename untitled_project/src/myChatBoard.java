@@ -27,6 +27,9 @@ import javax.swing.JTextField;
 public class myChatBoard extends JFrame {
 	private Socket socket;
 	private ObjectOutputStream writer;
+	private serialTransform st;
+	private myIO mio;
+	
 	private String nickname;
 	private String roomID;
 	private int userCnt;
@@ -38,19 +41,20 @@ public class myChatBoard extends JFrame {
 	private JTextArea textArea;
 	private JButton userListBttn;
 	
-	public void writeData(DTO dto) throws IOException {
-		byte[] serializedMember;
-		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
-			try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
-				oos.writeObject(dto);
-				System.out.println("Handler test1111");
-				serializedMember = baos.toByteArray();
-			}
-		}
-		this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
-		this.writer.flush();
-		this.writer.reset();
-	}
+	//public void writeData(DTO dto) throws IOException {
+	//	byte[] serializedMember;
+	//	try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+	//		try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
+	//			oos.writeObject(dto);
+	//			System.out.println("Handler test1111");
+	//			serializedMember = baos.toByteArray();
+	//		}
+	//	}
+	//	this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
+	//	//mio.myWrite(Base64.getEncoder().encodeToString(serializedMember));
+	//	this.writer.flush();
+	//	this.writer.reset();
+	//}
 	
 	public void sendData() {
 		String data=textField.getText();
@@ -62,7 +66,7 @@ public class myChatBoard extends JFrame {
 		dto.setCommand(Info.SEND);
 		dto.setMessage(data);
 		try {
-			writeData(dto);
+			mio.myWrite(dto);
 			System.out.println("서버에 전송: "+dto.getCommand());
 			textField.setText("");
 		}catch(Exception e1) {
@@ -166,6 +170,9 @@ public class myChatBoard extends JFrame {
 		
 		this.setTitle("chat board");
 		this.writer=writer;
+		st = new serialTransform();
+		mio = new myIO(this.writer, null);
+		
 		this.setSize(300,500);
 		
 		Dimension frameSize = this.getSize(); // frame size
