@@ -25,6 +25,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -562,7 +564,11 @@ public class paintClient{
 						//dto ¹ÞÀ½
 						//DTO dto = (DTO) st.decrypt(base64Member);
 						
-						DTO dto = mio.myRead();						
+						DTO dto = mio.myRead();
+						if(dto == null) {
+							System.out.println("recieve DTO is null!!");
+							continue;
+						}
 						
 						if(dto.getCommand()==Info.ROOMLIST) {
 							System.out.println("we got roomLIST!");
@@ -697,7 +703,6 @@ public class paintClient{
 				mio.shutdown();
 				System.exit(0);
 				
-				
 				try {
 					reader.close();
 					writer.close();
@@ -720,6 +725,7 @@ public class paintClient{
 	public paintClient() {
 		
 		try {
+
 			socket=new Socket(serverIP,port);
 			writer=new ObjectOutputStream(socket.getOutputStream());
 			reader=new ObjectInputStream(socket.getInputStream());
