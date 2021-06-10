@@ -6,6 +6,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.util.Base64;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class myIO {
 	private serialTransform st;
@@ -14,6 +18,7 @@ public class myIO {
 	
 	private DataOutputStream dos;
 	private DataInputStream dis;
+	private ExecutorService executorService;
 	
 	public myIO(ObjectOutputStream w, ObjectInputStream r) {
 		this.writer = w;
@@ -23,35 +28,55 @@ public class myIO {
 		this.dis = new DataInputStream(this.reader);
 		
 		st = new serialTransform();
+		executorService = Executors.newFixedThreadPool(10);
 	}
 	
 	public DTO myRead() throws IOException, ClassNotFoundException {
 
+		
 		DTO temp = null;
-		byte[] reciveData  = null;
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		
 		
 		int len = dis.readInt();
-		int returnLength = len;
-		reciveData = new byte[len];
-		int r;
-		while((r = dis.read(reciveData, 0, reciveData.length))!= -1) {
-			buffer.write(reciveData, 0 , r);
-		    returnLength = returnLength-r;
-		    if (returnLength<=0){
-		        break;
-		    }
-		}
-		buffer.flush();
-		String base64Member = buffer.toString();
+		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+
+			int r;
+			String base64Member = null;
+			int returnLength = len;
+			byte[] reciveData = new byte[len];
+			try {
+				while((r = dis.read(reciveData, 0, reciveData.length))!= -1) {
+					buffer.write(reciveData, 0 , r);
+				    returnLength = returnLength-r;
+				    if (returnLength<=0){
+				        break;
+				    }
+				}
+				buffer.flush();
+				base64Member = buffer.toString();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return base64Member;
+			
+		}, executorService);
 		
-		temp = (DTO) st.decrypt(base64Member);
+		
+		
+		try {
+			temp = (DTO) st.decrypt(future.get());
+		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		return temp;
 	}
 	
-	public void myWrite(DTO dto) throws IOException {
+	synchronized public void myWrite(DTO dto) throws IOException  {
 		
 		//String base64Member = st.encrypt(dto);
 		String base64Member = st.encrypt(dto);

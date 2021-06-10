@@ -14,6 +14,7 @@ public class paintHandler extends Thread {
 	private ObjectInputStream reader;
 	private ObjectOutputStream writer;
 	private Socket socket;
+	private Object mutex;
 	private myIO mio;
 	
 	private ArrayList<Room> roomList;
@@ -26,10 +27,11 @@ public class paintHandler extends Thread {
 	
 	private String nickname;
 	
-	public paintHandler(Socket socket, ArrayList<Room> roomList) {
+	public paintHandler(Socket socket, ArrayList<Room> roomList, Object m) {
 		try {
 			this.socket=socket;
 			this.roomList=roomList;
+			this.mutex = m;
 			this.writer=new ObjectOutputStream(socket.getOutputStream());
 			this.reader=new ObjectInputStream(socket.getInputStream());
 			this.lineList=new ArrayList<Line>();
@@ -150,9 +152,11 @@ public class paintHandler extends Thread {
 				// 			해당 클라이언트가 방을 나갔다는 정보 EXIT3에 담아 broadcast
 				else if(dto.getCommand()==Info.EXIT2) {
 					System.out.println("receive EXIT2 from "+dto.getNickname());
-					reader.close();
-					writer.close();
-					socket.close();
+					synchronized (mutex) {
+						reader.close();
+						writer.close();
+						socket.close();
+					}
 					room.exit1();
 					handlerList.remove(this);
 					
@@ -165,9 +169,11 @@ public class paintHandler extends Thread {
 				}
 				else if(dto.getCommand()==Info.EXIT3) {
 					try {
-						reader.close();
-						writer.close();
-						socket.close();
+						synchronized (mutex) {
+							reader.close();
+							writer.close();
+							socket.close();
+						}
 					}
 					catch(IOException e) {
 						e.printStackTrace();
