@@ -61,7 +61,7 @@ public class paintClient{
 	//private ObjectInputStream Entryreader;
 	//127.0.0.1
 	//118.91.36.52
-	private final String serverIP="127.0.0.1";
+	private final String serverIP="118.91.36.52";
 	private final int port=9790;
 	private serialTransform st;
 	private myIO mio;
@@ -694,7 +694,9 @@ public class paintClient{
 						e1.printStackTrace();
 					}
 				}
+				mio.shutdown();
 				System.exit(0);
+				
 				
 				try {
 					reader.close();

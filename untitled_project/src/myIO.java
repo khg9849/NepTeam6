@@ -4,12 +4,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.math.BigInteger;
-import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class myIO {
 	private serialTransform st;
@@ -28,7 +27,13 @@ public class myIO {
 		this.dis = new DataInputStream(this.reader);
 		
 		st = new serialTransform();
-		executorService = Executors.newFixedThreadPool(10);
+		 executorService = Executors.newFixedThreadPool(2);
+		 
+		
+	}
+	
+	public void shutdown() {
+		executorService.shutdown(); 
 	}
 	
 	public DTO myRead() throws IOException, ClassNotFoundException {
@@ -41,6 +46,11 @@ public class myIO {
 		int len = dis.readInt();
 		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 
+			 int poolSize = ((ThreadPoolExecutor)executorService).getPoolSize(); 
+				String threadName = Thread.currentThread().getName(); 
+				System.out.println("[총 스레드 개수 : " + poolSize + "] 작업 스레드 이름 : " + threadName);
+
+				
 			int r;
 			String base64Member = null;
 			int returnLength = len;
@@ -65,9 +75,9 @@ public class myIO {
 		}, executorService);
 		
 		
-		
 		try {
 			temp = (DTO) st.decrypt(future.get());
+			
 		} catch (InterruptedException | ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
