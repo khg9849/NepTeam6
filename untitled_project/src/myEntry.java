@@ -46,7 +46,6 @@ public class myEntry extends JFrame{
 	private JButton QuickjoinBttn;
 	private JList roomJList;
 	
-	//private Room room;
 	private String roomID;
 	private String roomPW;
 	private String nickname;
@@ -113,24 +112,19 @@ public class myEntry extends JFrame{
 		DTO _dto = new DTO();
 		_dto.setCommand(Info.ROOMLIST);
 		try {
-			//writer.writeObject(st.encrypt(_dto));
 			mio.myWrite(_dto);
 		}catch(Exception e1) {
 			e1.printStackTrace();
 		}
 		
 		try {
-			//String recvDTO = (String) this.reader.readObject();
-			//DTO dto = (DTO) st.decrypt(recvDTO);
 			DTO dto = mio.myRead();
 			
 			
 			Originridlist = dto.getRoomList();
 			Originrpwlist = dto.getRoomPwList();
 			
-		}/*catch(ClassNotFoundException e) {
-			e.printStackTrace();
-		}*/catch(IOException e1) {
+		}catch(IOException e1) {
 			e1.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -349,7 +343,6 @@ public class myEntry extends JFrame{
 				Character.toString(c);
 				roomPW+= (roomPW.equals("")) ? "" + c + "" : "" + c + "";
 			}
-			//roomPW=RPW.getText();
 			roomID=RID.getText();
 			nickname=Nname.getText();
 
@@ -357,12 +350,10 @@ public class myEntry extends JFrame{
 
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				//writer.writeObject(st.encrypt(dto));
 				mio.myWrite(dto);
 			}catch(Exception e1) {
 				e1.printStackTrace();
 			}
-			//System.out.println(ValidationRoomID(roomID));
 			if(!ValidationRoomID(roomID)) {
 				System.out.println("create room");
 				
@@ -372,7 +363,6 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 
 				try {
-					//writer.writeObject(st.encrypt(dto));
 					mio.myWrite(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
@@ -402,7 +392,6 @@ public class myEntry extends JFrame{
 				roomPW+= (roomPW.equals("")) ? "" + c + "" : "" + c + "";
 			}
 			roomID=QjoinID;
-			//roomPW=RPW.getText();
 			nickname=Nname.getText();
 			
 			DTO dto=new DTO();
@@ -410,7 +399,6 @@ public class myEntry extends JFrame{
 			
 			dto.setCommand(Info.ROOMLIST);
 			try {
-				//writer.writeObject(st.encrypt(dto));
 				mio.myWrite(dto);
 			}catch(Exception e1) {
 				e1.printStackTrace();
@@ -423,7 +411,6 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 		        
 				try {
-					//writer.writeObject(st.encrypt(dto));
 					mio.myWrite(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
@@ -455,7 +442,6 @@ public class myEntry extends JFrame{
 				roomPW+= (roomPW.equals("")) ? "" + c + "" : "" + c + "";
 			}
 			roomID=RID.getText();
-			//roomPW=RPW.getText();
 			nickname=Nname.getText();
 			
 			DTO dto=new DTO();
@@ -476,7 +462,6 @@ public class myEntry extends JFrame{
 		        dto.setNickname(nickname);
 		        
 				try {
-					//writer.writeObject(st.encrypt(dto));
 					mio.myWrite(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
@@ -556,7 +541,6 @@ public class myEntry extends JFrame{
     			disappear();
     			Cstat = 2;
     			System.exit(EXIT_ON_CLOSE);
- //   			exit(1);
         	}
         });
 	    

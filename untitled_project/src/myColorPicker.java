@@ -70,7 +70,6 @@ public class myColorPicker extends JFrame{
 		@Override
 		public void stateChanged(ChangeEvent e) {
 			colPanel.col=chooser.getColor();
-			//prevPanel.setColor(chooser.getColor());
 		}
 	};
 
@@ -88,14 +87,9 @@ public class myColorPicker extends JFrame{
 		 this.setResizable(false);
 		 
 		 Dimension frameSize = this.getSize(); // frame size
-			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // monitor size
-			// 우측에 위치
+			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // monitor size 우측에 위치
 			this.setLocation((screenSize.width - frameSize.width), (screenSize.height - screenSize.height));
 
-			
-			
-        
-       
        
        
         chooser = new JColorChooser();
@@ -106,8 +100,6 @@ public class myColorPicker extends JFrame{
 		model=chooser.getSelectionModel();
 		model.addChangeListener(chooserListener);
 		this.add(chooser);
-		// this.setVisible( true );
-	    
 	}
 	public Color getCol() {
 		return chooser.getColor();

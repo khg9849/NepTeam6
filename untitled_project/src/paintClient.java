@@ -55,79 +55,94 @@ enum BrushMode{
 
 public class paintClient{
 
-	
 	private Socket socket;
-
 	private ObjectOutputStream writer;
 	private ObjectInputStream reader;
-	//private ObjectInputStream Entryreader;
-	//127.0.0.1
-	//118.91.36.52
-	private final String serverIP="118.91.36.52";
+	private final String serverIP="127.0.0.1";	//127.0.0.1
 	private final int port=9790;
 	private serialTransform st;
 	private myIO mio;
 	
-	//Client 고유 번호
+	// client 고유 번호
 	private int ClientUID;
 	public int getClientUID() {return ClientUID;}
 	public void setClientUID(int n) {ClientUID = n;}
 	
 	private String roomID;
 	private String nickname;
-	private int userCnt;
 	
+	// 캔버스 관련 오브젝트
 	private JFrame f;
-	
 	private JLabel canvas;
 	private BufferedImage bi;
 	private Graphics g;
-	private JMenuBar mb;
-	
-	private myEntry entry;
-	 
-	// color picker
-	private myColorPicker colorPicker;
-	private myChatBoard chatBoard;
-	
 	private Color col;
 	
-	// brush diameter(직경)
-	private JSlider diaCol;
+	private myEntry entry;	// 시작화면
+	private myColorPicker colorPicker;	// 색상선택창
+	private myChatBoard chatBoard;		// 채팅창
+	private JMenuBar mb;	//메뉴바
 	
-	//현재 브러시의 역할 (e.g. 그리는중, 지우는중, 구역선택중 ...)
+	//현재 브러시의 역할 (브러시, 지우개, 레이어 선택)
 	private BrushMode brushMode;
 	private JRadioButton rb_draw;
 	private JRadioButton rb_erase;
+	private JSlider diaCol;	// 직경 슬라이더
 	
 	private boolean isThread=true;
 	
-	
 	public boolean isRecvDataStart = true;
-	//LayerList 배열은 BufferImage의 배열
-	//LayerName 배열은 해당 Layer의 설정 이름
-	private ArrayList<Layer> layerList;
-	private DefaultListModel<String> layerName;
-	//private String[] layerName;
+	private ArrayList<Layer> layerList;	//layer의 정보 리스트
+	private DefaultListModel<String> layerName;	//layer의 이름 리스트
 	JList<String> jl;
 	private int addLayer_initcount = 0;
 	private int selected_layerindex = 0;
 	
-	public void initSlider() {
-		diaCol = new JSlider(JSlider.HORIZONTAL, 1, 100, 20);
+	public void initDrawingTool() {
+		/*______________ 직경 조절 슬라이더 _________________ */
+		diaCol = new JSlider(JSlider.HORIZONTAL, 1, 50, 20);
 		diaCol.setBounds(450,20, 100,30);
 		diaCol.setFocusable(false);
         f.add(diaCol);
+        
+        /*______________ Draw & Erase 선택 버튼 ____________ */
+        
+      		rb_draw = new JRadioButton("draw (B)");
+      		rb_draw.addItemListener(new ItemListener() {
+      			public void itemStateChanged(ItemEvent e) {
+      				brushMode = BrushMode.DRAW;
+      			}
+      		});
+      		rb_erase = new JRadioButton("erase (E)");
+      		rb_erase.addItemListener(new ItemListener() {
+      			public void itemStateChanged(ItemEvent e) {
+      				brushMode = BrushMode.ERASE;
+      			}
+      		});
+      		
+      		//초기 선택은 draw모드
+      		rb_draw.setSelected(true);
+      		rb_draw.setFocusable(false);
+      		rb_erase.setFocusable(false);
+      		
+      		//라디오 버튼 그룹화 = 여러 옵션들 중에 하나만 선택하게 만들기
+      		ButtonGroup b_group = new ButtonGroup();
+      		b_group.add(rb_draw);
+      		b_group.add(rb_erase);
+      		
+  
+      		rb_draw.setBounds(450,50, 150,30);
+      		rb_erase.setBounds(450,80, 150,30);
+            f.add(rb_draw);
+            f.add(rb_erase);
 	}
 	
 	public void initMenu() {
         mb=new JMenuBar();
     	JMenu showMenu=new JMenu("Show");
     	JMenu fileMenu=new JMenu("File");
-    	JMenu tempMenu=new JMenu("Temp");
     	mb.add(showMenu);
     	mb.add(fileMenu);
-    	mb.add(tempMenu);
     	
     	JMenuItem item1=new JMenuItem("show color picker");
     	item1.addActionListener(new ActionListener() {
@@ -145,19 +160,6 @@ public class paintClient{
     	});
     	showMenu.add(item12);
     	
-    	//JMenuItem item2=new JMenuItem("Fetch");
-    	//item2.addActionListener(new ActionListener() {
-    	//	public void actionPerformed(ActionEvent e) {
-    	//		paintDTO dto=new paintDTO();
-        //        dto.setCommand(Info.FETCH);
-		//		try {
-		//			writer.writeObject(st.encrypt(dto));
-		//		}catch(Exception e1) {
-		//			e1.printStackTrace();
-		//		}
-    	//	}
-    	//});
-    	//tempMenu.add(item2);
     	
     	JMenuItem item3=new JMenuItem("Save");
     	item3.addActionListener(new ActionListener() {
@@ -179,7 +181,7 @@ public class paintClient{
     	f.setJMenuBar(mb);
     	 
 	}
-	
+	/*
 	//layerList에 있는 BufferImage들의 고유 이름을 layerName배열로 초기화
 	public void initArrayFromList(DefaultListModel<String> layerName2, ArrayList<Layer> layerList2) {
 		layerName.clear();
@@ -187,6 +189,7 @@ public class paintClient{
 			layerName.insertElementAt(layerList2.get(i).getName(), i);
 		}
 	}
+	*/
 	
 	//레이어가 들어있는 상자의 위치와 속성 초기화
 	public void initLayer() {
@@ -199,10 +202,7 @@ public class paintClient{
                 addLayer(null);
 				dto.setLayerBoolean(true);
 				dto.setCommand(Info.LAYER);
-				//System.out.println("layerlist "+ layerList.size());
-				
 				try {
-					//writer.writeObject(st.encrypt(dto));
 					mio.myWrite(dto);
 				}catch(Exception e1) {
 					e1.printStackTrace();
@@ -223,7 +223,6 @@ public class paintClient{
 					System.out.println("layerlist "+ layerList.size());
 	                 
 					try {
-						//writer.writeObject(st.encrypt(dto));
 						mio.myWrite(dto);
 					}catch(Exception e1) {
 						e1.printStackTrace();
@@ -258,7 +257,6 @@ public class paintClient{
 				if (jl.getSelectedIndex() != -1) { 
 					selected_layerindex = jl.getSelectedIndex();
 					g = layerList.get(selected_layerindex).getGraphics();
-					//System.out.println("you select number of " + selected_layerindex);
 				}
 			}
 		});
@@ -272,6 +270,7 @@ public class paintClient{
 
 	//레이어를 추가, 삭제, 권한변경, 우선순위변경, 이름바꾸기
 	public void addLayer(Layer temp) {
+		// add layer
 		if(temp == null) {
 			Layer l = new Layer("layer" + layerList.size());
 			l.setPriority(layerList.size());
@@ -280,13 +279,16 @@ public class paintClient{
 			layerName.insertElementAt("layer" + layerList.size(), layerList.size());
 			layerList.add(l);
 		}
+		// fetch layer
 		else {
+			// 파라미터로 받은 레이어 정보를 layerLit에 추가한다
 			layerName.insertElementAt("layer" + layerList.size(), layerList.size());
 			layerList.add(temp);
 			updateCanvas();
 		}
 	}
 	public void delLayer(int index) {
+		// index는 삭제할 layer의 index
 		layerList.remove(index);
 		layerName.remove(layerList.size());
 		for(int i = index; i < layerList.size(); i++ ) {
@@ -294,23 +296,33 @@ public class paintClient{
 		}
 		updateCanvas();
 		
-		//선택된 layer를 삭제되고나서 다시 그림을 그리기 위해서는 레이어를 재선택해얃 함.
+		// 선택된 layer를 삭제하고 다음 레이어가 자동으로 선택되는 것을 막음
 		jl.clearSelection();
 	}
 	
 	public void updateCanvas() {
+		//Canvas의 버퍼이미지에서 그래픽부분을 가져온다.
 		Graphics _g = bi.getGraphics();
+		
+		//Canvas의 배경을 흰색으로 설정한다.
 		_g.clearRect(0, 0, 400, 400);
 		_g.setColor(Color.WHITE);
 		_g.fillRect(0, 0, 400, 400);
+		
+		// layerList의 하위 레이어부터 버퍼이미지에 그린다.
 		for(Layer cho:layerList) {
 			bi.getGraphics().drawImage(cho, 0, 0, 400,400, null);
 		}
+		
+		//빠른 프레임 전환으로 인해 생기는 깜빡임 현상(Flickering)을 최소화하기 위해
+		//이전에 호출한 updateCanvas와 지금 호출한 updateCanvas의 sleep 간격을 정한다.
 		try {
 			Thread.sleep(1);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		
+		//버퍼이미지를 Canvas로 올린다.
 		canvas.repaint();
 	}
 	
@@ -324,52 +336,19 @@ public class paintClient{
 	        canvas=new JLabel(new ImageIcon(bi));
 	        canvas.setBounds(20,20,400,400);
 	        f.add(canvas);
-	}
-	
-	public void initRadioButton() {
-		//라디오 버튼 생성 및 각 버튼에 대한 이벤트 처리
-		rb_draw = new JRadioButton("test_draw (B)");
-		rb_draw.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				brushMode = BrushMode.DRAW;
+	        
+	        // Fetch
+	        DTO dto=new DTO();
+	        dto.setCommand(Info.FETCH);
+			try {
+				mio.myWrite(dto);
+			}catch(Exception e1) {
+				e1.printStackTrace();
 			}
-		});
-		rb_erase = new JRadioButton("test_erase (E)");
-		rb_erase.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				brushMode = BrushMode.ERASE;
-			}
-		});
-		
-		//초기 선택은 draw모드
-		rb_draw.setSelected(true);
-		rb_draw.setFocusable(false);
-		rb_erase.setFocusable(false);
-		
-		//라디오 버튼 그룹화 = 여러 옵션들 중에 하나만 선택하게 만들기
-		ButtonGroup b_group = new ButtonGroup();
-		b_group.add(rb_draw);
-		b_group.add(rb_erase);
-		
-		//메인 화면에 출력
-		rb_draw.setBounds(450,50, 150,30);
-		rb_erase.setBounds(450,80, 150,30);
-        f.add(rb_draw);
-        f.add(rb_erase);
 	}
+
 	
-	public void initFetch() {
-		DTO dto=new DTO();
-        dto.setCommand(Info.FETCH);
-		try {
-			//writer.writeObject(st.encrypt(dto));
-			mio.myWrite(dto);
-		}catch(Exception e1) {
-			e1.printStackTrace();
-		}
-	}
-	
-	public void setCanvas() {
+	public void start() {
 		f=new JFrame("Canvas");
 		f.setSize(600,500);
         f.setLocationRelativeTo(null);
@@ -381,7 +360,6 @@ public class paintClient{
     			dto.setNickname(nickname);
     			dto.setCommand(Info.EXIT1);
     			try {
-    				//writer.writeObject(st.encrypt(dto));
     				mio.myWrite(dto);
     				System.out.println("서버에 EXIT1 전송");
     			}catch(Exception e1) {
@@ -391,26 +369,18 @@ public class paintClient{
     		}
         });
         
-        
-       
         initMenu();
-        
-        initSlider();
+        initDrawingTool();
         initLayer();
         initCanvas();
-        initRadioButton();
-        initFetch();
         
-        // color picker
-        colorPicker=new myColorPicker(Color.BLACK);
+        colorPicker=new myColorPicker(Color.BLACK);	 // 색상선택창
+        chatBoard=new myChatBoard(writer,roomID,nickname); //채팅창
         
         //브러시 설정
     	Brush bb=new Brush(col, 20);
         bb.setBounds(20,20,400,400);
         bb.setCol(colorPicker.getCol());
-        
-        chatBoard=new myChatBoard(writer,roomID,nickname,userCnt);
-
         
         
         canvas.addMouseMotionListener( new MouseMotionListener() {
@@ -449,7 +419,6 @@ public class paintClient{
 					dto.setB(st.encrypt(bb));
 	                 
 					try {
-						//writer.writeObject(st.encrypt(dto));
 						mio.myWrite(dto);
 					}catch(Exception e1) {
 						e1.printStackTrace();
@@ -498,7 +467,6 @@ public class paintClient{
 		            dto.setBrushMode(brushMode);
 	                
 					try {
-						//writer.writeObject(st.encrypt(dto));
 						mio.myWrite(dto);
 					}catch(Exception e1) {
 						e1.printStackTrace();
@@ -512,7 +480,6 @@ public class paintClient{
 	        		DTO dto=new DTO();
 	                dto.setCommand(Info.LINE_FINISH);
 					try {
-						//writer.writeObject(st.encrypt(dto));
 						mio.myWrite(dto);
 					}catch(Exception e1) {
 						e1.printStackTrace();
@@ -561,29 +528,24 @@ public class paintClient{
 				
 				while(isThread) {
 					try {
-						//dto 받음
-						//DTO dto = (DTO) st.decrypt(base64Member);
-						
 						DTO dto = mio.myRead();
 						if(dto == null) {
-							System.out.println("recieve DTO is null!!");
+							System.out.println("DTO is null");
 							continue;
 						}
 						
 						if(dto.getCommand()==Info.ROOMLIST) {
-							System.out.println("we got roomLIST!");
+							System.out.println("we got roomLIST:");
 							System.out.println(dto.getRoomList());
 						}
 						else if(dto.getCommand()==Info.SEND) {
 							chatBoard.readData(dto);
 						}
 						else if (dto.getCommand() == Info.LAYER) {
-							//System.out.println("recvLayer!!!");
 							boolean isAddLayer = dto.getLayerBoolean();
 							int deleteLayerIndex = dto.getL();
 							
 							if(isAddLayer == true) {
-								//if(dto.getl() == null)
 								int LayerSize = dto.getLsize();
 								if(LayerSize == -1)
 									addLayer(null);
@@ -594,7 +556,7 @@ public class paintClient{
 										temp1.add(ol);
 									}
 									for(int i = 0; i < LayerSize; i++) {
-										//BufferedImage ol = temp1.get(i);
+										// 뉴비는 최신 레이어 정보를 반복문으로 받는다.
 										String tt = (String)reader.readObject();
 										
 										BufferedImage _l = st.decrypt_layer(tt);
@@ -605,12 +567,10 @@ public class paintClient{
 										__g.drawImage(_l, 0, 0, 400, 400, null);
 										l.setPriority(i);
 										
-
+										// 파라미터로 null이 아닌 값을 보낸다.	
 										addLayer(l);
 									}
 								}
-								//else
-								//	addLayer((Layer)st.decrypt(dto.getl()));
 							}
 							else if(isAddLayer == false){
 								delLayer(deleteLayerIndex);
@@ -629,13 +589,11 @@ public class paintClient{
 							sendDTO.setCommand(Info.EXIT2);
 							sendDTO.setNickname(nickname);
 							try {
-								//writer.writeObject(st.encrypt(sendDTO));
 								mio.myWrite(sendDTO);
 							}catch(IOException e) {
 								e.printStackTrace();
 							}
 							System.out.println("send EXIT2 to server");
-							chatBoard.subUserCnt();
 							break;
 						}
 						// EXIT(3): 전송받은 EXIT3를 통해 어떤 클라이언트가 접속을 종료했는지 파악
@@ -676,14 +634,13 @@ public class paintClient{
 						    
 						}
 						else if (dto.getCommand() == Info.FETCH) {
-							//뉴비가 FETCH를 보내면 handlerList의 index 0에게 FETCH dto를 보낸다
-							//이 때, 해당 dto를 받은 클라(index 0의 클라)는 자신이 가지고 있던 Layer들을 뉴비에게 보낸다.
+							//뉴비가 FETCH를 보내면 index가 0인 client에게 FETCH dto를 보낸다
+							//해당 client는 자신이 가지고 있던 Layer들을 뉴비에게 보낸다.
 
 							DTO sendDTO = new DTO();
 							sendDTO.setCommand(Info.FETCH2);
 							sendDTO.setLsize(layerList.size());
 							try {
-								//writer.writeObject(st.encrypt(sendDTO));
 								mio.myWrite(sendDTO);
 							}catch(Exception e1) {
 								e1.printStackTrace();
@@ -719,25 +676,20 @@ public class paintClient{
 	}
 	
 
-	/*
-	
-	 */
 	public paintClient() {
 		
 		try {
-
 			socket=new Socket(serverIP,port);
 			writer=new ObjectOutputStream(socket.getOutputStream());
 			reader=new ObjectInputStream(socket.getInputStream());
 			st = new serialTransform();
 			mio = new myIO(writer, reader);
 			
-			//Entryreader=new ObjectInputStream(socket.getInputStream());
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
-		entry=new myEntry(writer, reader, socket);
 		
+		entry=new myEntry(writer, reader, socket);
 		while(entry.currentStat() == 0) {
 			System.out.print("");
 		}
@@ -745,10 +697,7 @@ public class paintClient{
 		if(entry.currentStat() == 1) { 
 			nickname=entry.getNickname();
 			roomID=entry.getRoomID();
-			userCnt=entry.getUserCnt();
-			
-			setCanvas();
-			
+			start();
 			recvData();
 		}
 		else if(entry.currentStat()==2) {

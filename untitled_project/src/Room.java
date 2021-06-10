@@ -71,8 +71,6 @@ public class Room {
 	}
 
 	public void join(String nickname2) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	public int getUserCnt() {

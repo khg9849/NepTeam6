@@ -18,7 +18,6 @@ public class paintServer{
 	
 	
 	public paintServer() {
-		//List<Room> synchronizedList  = Collections.synchronizedList(new ArrayList<Room>());
 		   try {
 	            serverSocket = new ServerSocket(port);
 	            System.out.println("["+port+"] server is ready to get client");

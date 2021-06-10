@@ -49,7 +49,6 @@ public class DTO implements Serializable {
 	
 	private String roomID;
 	private String roomPW;
-	private int userCnt;
 	
 	private String roomList;
 	private String roompwList;
@@ -156,12 +155,5 @@ public class DTO implements Serializable {
 		this.roompwList = roompwList;
 	}
 
-	public int getUserCnt() {
-		return userCnt;
-	}
-
-	public void setUserCnt(int userCnt) {
-		this.userCnt = userCnt;
-	}
 	
 }

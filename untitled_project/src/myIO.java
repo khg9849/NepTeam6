@@ -37,9 +37,7 @@ public class myIO {
 
 		
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		
 
-		//DTO temp = null;
 		int len = dis.readInt();
 		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 
@@ -58,7 +56,6 @@ public class myIO {
 				buffer.flush();
 				base64Member = buffer.toString();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -79,7 +76,6 @@ public class myIO {
 				return temp;
 			}
 		} catch (InterruptedException | ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -87,7 +83,6 @@ public class myIO {
 	
 	synchronized public void myWrite(DTO dto) throws IOException  {
 		
-		//String base64Member = st.encrypt(dto);
 		String base64Member = st.encrypt(dto);
 		int len = base64Member.length();
 		

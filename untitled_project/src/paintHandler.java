@@ -39,7 +39,7 @@ public class paintHandler extends Thread {
 			e.printStackTrace();
 		}
 		
-		System.out.println("initialMenu()?");
+		System.out.println("handler is ready");
 	}
 
 	public void run() {
@@ -50,9 +50,7 @@ public class paintHandler extends Thread {
 				st = new serialTransform();
 				mio = new myIO(writer, reader);
 				
-				//String base64Member = (String) this.reader.readObject();
 				DTO dto = mio.myRead();
-				//readData();
 				
 				boolean cflag = true;
 				if(dto.getCommand()==Info.ROOMLIST) {
@@ -68,7 +66,7 @@ public class paintHandler extends Thread {
 						System.out.println("for\n");
 						// 1. 중복됨 => 메시지 띄우기
 						if(r.getRoomID().equals(roomID)) {
-							System.out.println("중복된다~!");
+							System.out.println("방 이름이 중복된다.");
 							cflag = false;
 						}
 						
@@ -88,9 +86,7 @@ public class paintHandler extends Thread {
 						sendDTO.setCommand(Info.CREATE);
 						sendDTO.setRoomID(roomID);
 						sendDTO.setNickname(nickname);
-						sendDTO.setUserCnt(room.getUserCnt());
 						try {
-							//writer.writeObject(st.encrypt(sendDTO));
 							mio.myWrite(sendDTO);
 						}catch(IOException e) {
 							e.printStackTrace();
@@ -115,10 +111,8 @@ public class paintHandler extends Thread {
 								DTO sendDTO=new DTO();
 								sendDTO.setCommand(Info.ENTER);
 								sendDTO.setNickname(nickname);
-								sendDTO.setUserCnt(r.getUserCnt());
 								broadcast(sendDTO);
 								try {
-									//writer.writeObject(st.encrypt(sendDTO));
 									mio.myWrite(sendDTO);
 								}catch(IOException e) {
 									e.printStackTrace();
@@ -129,11 +123,6 @@ public class paintHandler extends Thread {
 						
 					}
 
-					// 2. 방 없음
-					// (지금은 중복 무조건 방 있다고 가정)
-//					if(flag==0) {
-//						System.out.println("방 없다~!");
-//					}
 				}
 				//EXIT(1): 클라이언트에게서 EXIT1을 받으면 다시 EXIT1 전송
 				else if(dto.getCommand()==Info.EXIT1) {
@@ -194,17 +183,11 @@ public class paintHandler extends Thread {
 					broadcast(sendDTO);
 				}
 				else if(dto.getCommand()==Info.DRAW) {
-					
 					//클라이언트에서 받은 dto를 소켓에 연결된 모든 클라이언트들에게 보냄
 					broadcast(dto);
-					
-					//line.add(dto); // line에 brush 추가
 				}
 				else if(dto.getCommand()==Info.LINE_START) {
-					//line=new Line(); // line 입력 시작
 					broadcast(dto);
-					
-					//line.add(dto);
 				}
 				else if(dto.getCommand()==Info.LINE_FINISH) {
 					lineList.add(line); // line 입력 종료 -> lineList에 추가
@@ -219,7 +202,6 @@ public class paintHandler extends Thread {
 						DTO sendDTO = new DTO();
 						sendDTO.setCommand(Info.FETCH);
 						try {
-							//temp.writer.writeObject(st.encrypt(sendDTO));
 							temp.mio.myWrite(sendDTO);
 						}catch(IOException e) {
 							e.printStackTrace();
@@ -236,28 +218,23 @@ public class paintHandler extends Thread {
 					layerDTO.setLsize(dto.getLsize());
 					layerDTO.setCommand(Info.LAYER);
 					try {
-						//newbie.writer.writeObject(st.encrypt(layerDTO));
 						newbie.mio.myWrite(layerDTO);
 					}catch(IOException e){
 						e.printStackTrace();
 					}
 
 					for(int i = 0; i < dto.getLsize(); i++) {
-						//DTO tt = mio.myRead();
-						//newbie.mio.myWrite(tt);
 						String tt = (String)reader.readObject();
 						newbie.writer.writeObject(tt);
 					}
 				}
 				else if(dto.getCommand() == Info.LAYER) {
 					broadcast(dto);
-					//line.add(dto);
 				}
 			}
 		}catch(IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -280,7 +257,6 @@ public class paintHandler extends Thread {
 		System.out.println("we will send roomlist: "+roomlist);
 		System.out.println("we will send roompwlist: "+roompwlist);
 		try {
-			//this.writer.writeObject(st.encrypt(dto));
 			mio.myWrite(dto);
 		}catch(IOException e) {
 			e.printStackTrace();
@@ -289,11 +265,9 @@ public class paintHandler extends Thread {
 
 	private void broadcast(DTO dto) {
 		if(handlerList.isEmpty()) return;
-		//System.out.println("handlerList is not empty. so server can broadcast");
 		for(paintHandler cho:handlerList) {
 			try {
 				if(cho != this) {
-					//cho.writer.writeObject(cho.st.encrypt(dto));
 					cho.mio.myWrite(dto);
 				}
 				else {

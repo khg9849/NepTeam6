@@ -32,7 +32,6 @@ public class myChatBoard extends JFrame {
 	
 	private String nickname;
 	private String roomID;
-	private int userCnt;
 	
 	private JPanel chatPanel;
 	private JTextField textField;
@@ -40,21 +39,6 @@ public class myChatBoard extends JFrame {
 	private JScrollPane scrollPane;
 	private JTextArea textArea;
 	private JButton userListBttn;
-	
-	//public void writeData(DTO dto) throws IOException {
-	//	byte[] serializedMember;
-	//	try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
-	//		try(ObjectOutputStream oos = new ObjectOutputStream(baos)){
-	//			oos.writeObject(dto);
-	//			System.out.println("Handler test1111");
-	//			serializedMember = baos.toByteArray();
-	//		}
-	//	}
-	//	this.writer.writeObject(Base64.getEncoder().encodeToString(serializedMember));
-	//	//mio.myWrite(Base64.getEncoder().encodeToString(serializedMember));
-	//	this.writer.flush();
-	//	this.writer.reset();
-	//}
 	
 	public void sendData() {
 		String data=textField.getText();
@@ -88,10 +72,8 @@ public class myChatBoard extends JFrame {
 		enter(dto);
 	}
 	public void enter(DTO dto) {
-		userCnt=dto.getUserCnt();
-		userListBttn.setText(roomID+"("+userCnt+")");
+		userListBttn.setText(roomID);
 		textArea.append("[System]: "+dto.getNickname()+" entered\n");
-		System.out.println("userCnt is "+userCnt);
 		scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
 	}
 	
@@ -99,10 +81,7 @@ public class myChatBoard extends JFrame {
 		textArea.append("[System]: "+dto.getNickname()+" exited\n");
 		scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
 	}
-	public void subUserCnt() {
-		userCnt--;
-		userListBttn.setText(roomID+"("+userCnt+")");
-	}
+
 	public void initChatPanel() {
 		chatPanel=new JPanel();
 		textField=new JTextField();
@@ -163,10 +142,9 @@ public class myChatBoard extends JFrame {
 	}
 	
 	
-	public myChatBoard(ObjectOutputStream writer, String roomID, String nickname, int userCnt) {
+	public myChatBoard(ObjectOutputStream writer, String roomID, String nickname) {
 		this.roomID=roomID;
 		this.nickname=nickname;
-		this.userCnt=userCnt;
 		
 		this.setTitle("chat board");
 		this.writer=writer;
@@ -176,12 +154,10 @@ public class myChatBoard extends JFrame {
 		this.setSize(300,500);
 		
 		Dimension frameSize = this.getSize(); // frame size
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // monitor size
-		// ÁÂÃø¿¡ À§Ä¡
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); // monitor size ÁÂÃø¿¡ À§Ä¡
 		this.setLocation(10, (screenSize.height - screenSize.height));
 
         this.setLayout(null);
-        //this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.addWindowListener(new WindowAdapter() {
         	public void windowClosing(WindowEvent e) {
     			disappear();
@@ -191,7 +167,6 @@ public class myChatBoard extends JFrame {
         
         initChatPanel();
 		this.add(chatPanel);
-		//appear();
 	}
 
 	
